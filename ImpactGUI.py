@@ -76,10 +76,10 @@ INTEGRATOR_TYPE      = {'Linear'    :'1',
 
 class ImpactMainWindow(tk.Tk):
     LABEL_TEXT =[
-        "This is Test_FrameRaise version for ImpactT interface",
-        "Actually, it is also my learning toy.",
-        "It is my first time to make a GUI with Python.",
-        "So, don't feel strange if u meet some bug.",
+        "This is the test version for Impact interface",
+        #"Actually, it is also my learning toy.",
+        #"It is my first time to make a GUI with Python.",
+        #"So, don't feel strange if u meet some bug.",
         "If u meet a bug, or have any question, pls contact zhicongliu@lbl.gov\n"
         "GOOD LUCK, HAVE FUN!"
         ]
@@ -586,7 +586,8 @@ class ImpactMainWindow(tk.Tk):
                 if not math.isclose(re[j], float(self.string_twiss[i][j].get()),rel_tol=1e-06):
                     self.string_twiss[i][j].set(str(re[j]))
         except:
-            print('Error')
+            #print('Error')
+            pass
         self.updateTwissLock = 0
     def updateSigma(self,i):
         if self.updateTwissLock ==1:
@@ -606,7 +607,8 @@ class ImpactMainWindow(tk.Tk):
                 else:
                     pass
         except:
-            print('Error')
+            #print('Error')
+            pass
         self.updateTwissLock = 0
     def preprocessing(self):
         if self.AccKernel=='ImpactT':
@@ -1110,15 +1112,15 @@ class ImpactMainWindow(tk.Tk):
             rowtemp+=1
 
         '''Particle Type'''
-        print(PARTICLE_TYPE)
+        #print(PARTICLE_TYPE)
         invermap = dict(map(lambda t:(t[1],t[0]), PARTICLE_TYPE.items()))
-        print(invermap)
+        #print(invermap)
         ptcFound = 0
         for key in invermap.keys():
             ptc = key.split()
             try:
-                if math.isclose(float(ptc[0]), float(linesList[8][2]),rel_tol=1e-3):
-                    if math.isclose(float(ptc[1]), float(linesList[8][3]),rel_tol=1e-3):
+                if math.isclose(float(ptc[0]), float(linesList[rowtemp][2]),rel_tol=1e-3):
+                    if math.isclose(float(ptc[1]), float(linesList[rowtemp][3]),rel_tol=1e-3):
                         self.ptcTypeComx.set(invermap[key])
                         ptcFound = 1
                         break
@@ -1126,8 +1128,10 @@ class ImpactMainWindow(tk.Tk):
                 pass
         if ptcFound==0:
             self.ptcTypeComx.set('Other')
-        self.ptcMass    .set(linesList[8][2])
-        self.ptcCharge  .set(linesList[8][3])
+        
+        self.ptcMass    .set(linesList[rowtemp][2])
+        self.ptcCharge  .set(linesList[rowtemp][3])
+        #print(rowtemp,linesList[rowtemp])
             
         """Current"""
         self.entry_cur.delete(0, tk.END)
@@ -1352,7 +1356,7 @@ def resource_path(relative_path):
         print(1,base_path)
     except Exception:
         base_path = os.path.abspath(".")
-    print(base_path,relative_path,os.path.join(base_path, relative_path))
+    #print(base_path,relative_path,os.path.join(base_path, relative_path))
     return os.path.join(base_path, relative_path)
 
 def quitConfirm():
@@ -1369,7 +1373,7 @@ x = (ws/2) - (w/2)
 y = (hs/2) - (h/2)
 
 root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-root.resizable(width=0, height=1)
+root.resizable(width=1, height=1)
 #root.protocol("WM_DELETE_WINDOW", quitConfirm)
 
 
