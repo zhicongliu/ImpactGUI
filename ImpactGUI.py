@@ -1299,7 +1299,7 @@ class MyMenu():
         helpmenu.add_command(label="Help", command=self.help_help)
         helpmenu.add_command(label="About", command=self.help_about)
         self.menubar.add_cascade(label="File", menu=filemenu)
-        self.menubar.add_cascade(label="Edit", menu=controlMenu)
+        self.menubar.add_cascade(label="Siwtch", menu=controlMenu)
         self.menubar.add_cascade(label="Help", menu=helpmenu)
         
         root.config(menu=self.menubar)
