@@ -1,4 +1,3 @@
-
 # convert from the Trace3d twiss parameter to the IMPACT input distribution parameters.
 # Here, the TRACE3d units are, alpha, beta (m/rad), emittance (mm-mrad, rms, unnormalized)
 #                              alpha_z,beta_z (deg/keV), emittance (deg-keV,rms)
@@ -6,7 +5,6 @@
 
 
 import math
-
 
 def Twiss2Sigma(alpha,beta,emittance,freq,mass,kine):
     Egamma = 1 + kine/mass

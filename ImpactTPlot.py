@@ -10,6 +10,7 @@ from tkinter import ttk,filedialog
 import time,os,sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter 
 from scipy.stats import gaussian_kde
 import numpy as np
 
@@ -327,6 +328,11 @@ class PlotFrame(tk.Frame):
         subfig = fig.add_subplot(111)
         subfig.plot(x,y)
 
+        xmajorFormatter = FormatStrFormatter('%2.2E')
+        subfig.yaxis.set_major_formatter(xmajorFormatter)
+        box = subfig.get_position()
+        subfig.set_position([box.x0*1.2, box.y0*1.1, box.width, box.height])
+        
         canvas = FigureCanvasTkAgg(fig, self)
         canvas.show()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -415,9 +421,10 @@ class OverallFrame(tk.Frame):
             self.subfig[i].set_xlabel(xyLabelList[i][0])
             self.subfig[i].set_ylabel(xyLabelList[i][1])
             box = self.subfig[i].get_position()
-            self.subfig[i].set_position([box.x0, box.y0, box.width, box.height * 0.9])
-            self.subfig[i].legend(loc='upper center', bbox_to_anchor=(0.5, 1.17),fancybox=True, shadow=True, ncol=5)
-
+            self.subfig[i].set_position([box.x0*1.1, box.y0*1.1, box.width, box.height *0.88])
+            xmajorFormatter = FormatStrFormatter('%2.2E')
+            self.subfig[i].yaxis.set_major_formatter(xmajorFormatter)  
+            self.subfig[i].legend(loc='upper center', bbox_to_anchor=(0.5, 1.21),fancybox=True, shadow=True, ncol=5)
         self.canvas.draw()
         
 class EmitGrowthFrame(PlotBaseFrame):
@@ -542,9 +549,14 @@ class PlotHighOrderBaseFrame(tk.Frame):
         x   = 0
         y   = self.ParticleDirec[self.ppc1.get()]
         
-        self.fig = Figure(figsize=(5,5), dpi=100)
+        self.fig = Figure(figsize=(6,5), dpi=100)
         self.subfig = self.fig.add_subplot(111)
         self.subfig.scatter(self.data[x],self.data[y],s=1)
+        
+        xmajorFormatter = FormatStrFormatter('%2.2E')
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        box = self.subfig.get_position()
+        self.subfig.set_position([box.x0*1.4, box.y0, box.width, box.height])
 
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.show()
@@ -565,6 +577,9 @@ class PlotMaxFrame(PlotHighOrderBaseFrame):
         
         self.subfig.clear()
         self.subfig.plot(self.data[0],self.data[y])
+        
+        xmajorFormatter = FormatStrFormatter('%2.2E')
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
 
         self.subfig.set_xlabel('time (secs)')
         if y%2==0:
@@ -582,6 +597,9 @@ class Plot3orderFrame(PlotHighOrderBaseFrame):
         
         self.subfig.clear()
         self.subfig.plot(self.data[0],self.data[y])
+        
+        xmajorFormatter = FormatStrFormatter('%2.2E')
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
 
         self.subfig.set_xlabel('time (secs)')
         if y%2==0:
@@ -656,9 +674,12 @@ class PlotParticleBaseFrame(tk.Frame):
         x   = self.ParticleDirec[self.ppc1.get()]
         y   = self.ParticleDirec[self.ppc2.get()]
         
-        self.fig = Figure(figsize=(5,5), dpi=100)
+        self.fig = Figure(figsize=(6,5), dpi=100)
         self.subfig = self.fig.add_subplot(111)
         self.subfig.scatter(self.data[x],self.data[y],s=1)
+        
+        box = self.subfig.get_position()
+        self.subfig.set_position([box.x0*1.4, box.y0, box.width, box.height])
 
         self.canvas = FigureCanvasTkAgg(self.fig, self)
         self.canvas.show()
@@ -680,7 +701,11 @@ class PhaseSpaceFrame(PlotParticleBaseFrame):
         
         self.subfig.clear()
         self.subfig.scatter(self.data[x],self.data[y],s=1)
-
+        
+        xmajorFormatter = FormatStrFormatter('%2.2e')
+        self.subfig.xaxis.set_major_formatter(xmajorFormatter)
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        
         self.canvas.draw()
         
     def quit(self):
@@ -698,6 +723,10 @@ class ParticleDensityFrame(PlotParticleBaseFrame):
         self.subfig.clear()
         self.subfig.hist2d(self.data[x],self.data[y],(100, 100),cmap = 'jet')
 
+        xmajorFormatter = FormatStrFormatter('%2.2e')
+        self.subfig.xaxis.set_major_formatter(xmajorFormatter)
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        
         self.subfig.set_xlabel(self.ppc1.get())
         self.subfig.set_ylabel(self.ppc2.get())
 
@@ -721,8 +750,12 @@ class ParticleDensityFrame2(PlotParticleBaseFrame):
         idx = z.argsort()
         x, y, z = x[idx], y[idx], z[idx]        
         
-        self.subfig.scatter(x, y, c=z, s=10, edgecolor='')        
+        self.subfig.scatter(x, y, c=z, s=10, edgecolor='')
 
+        xmajorFormatter = FormatStrFormatter('%2.2e')
+        self.subfig.xaxis.set_major_formatter(xmajorFormatter)
+        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        
         self.subfig.set_xlabel(self.ppc1.get())
         self.subfig.set_ylabel(self.ppc2.get())
 

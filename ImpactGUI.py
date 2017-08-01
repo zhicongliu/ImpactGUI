@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 #Test GUI for Impact code
 #by Zhicong liu @ 20170622 
@@ -76,12 +76,12 @@ INTEGRATOR_TYPE      = {'Linear'    :'1',
 
 class ImpactMainWindow(tk.Tk):
     LABEL_TEXT =[
-        "This is the test version for Impact interface",
+        "This is a test version of IMPACT user interface..."
         #"Actually, it is also my learning toy.",
         #"It is my first time to make a GUI with Python.",
         #"So, don't feel strange if u meet some bug.",
-        "If u meet a bug, or have any question, pls contact zhicongliu@lbl.gov\n"
-        "GOOD LUCK, HAVE FUN!"
+        #"If u meet a bug, or have any question, pls contact zhicongliu@lbl.gov\n"
+        #"GOOD LUCK, HAVE FUN!"
         ]
 
     PLOTTYPE = {'Centriod location' :2,
@@ -167,7 +167,7 @@ class ImpactMainWindow(tk.Tk):
         
         self.frame_input2 = tk.LabelFrame(self.frame1, 
                                           height =_height/2, width = _width, 
-                                          text="Beam parameter")
+                                          text="Numerical parameters")
         #self.frame_input2.grid(row=2,column=0,sticky='W')
         self.frame_input2.pack(fill = 'x',side = 'left')
         rowtemp=1
@@ -243,7 +243,7 @@ class ImpactMainWindow(tk.Tk):
         """Twiss"""
         twisswidth = 9
         self.frame_Twiss = tk.LabelFrame(self.frame1, 
-                                         height =_height/2, width = _width, text="Twiss")
+                                         height =_height/2, width = _width, text="Beam Twiss")
         self.frame_Twiss.pack(fill = 'y',side = 'left')
 
         self.twiss_s = []
@@ -388,7 +388,7 @@ class ImpactMainWindow(tk.Tk):
         self.entry_frq.grid(row=rowtemp,column=1,sticky='E')
         rowtemp+=1
         
-        '''Advanced Set'''
+        '''Advanced Setting'''
         self.Nbunch      = tk.StringVar(value='1')
         self.Dim         = tk.StringVar(value='6')
         self.Flagmap     = tk.StringVar(value='Linear')
@@ -416,14 +416,14 @@ class ImpactMainWindow(tk.Tk):
         self.CurrentList     = tk.StringVar(value='0.0')
         self.SchargeList     = tk.StringVar(value='1.06577993775845e-09')
            
-        self.button_AdvancedControl = tk.Button(self.frame1,text='Advanced Set',
+        self.button_AdvancedControl = tk.Button(self.frame1,text='Advanced Setting',
                                                 command = self.makeAdvancedSet)
         self.button_AdvancedControl.pack(fill='both',expand=1,padx = 15, pady=20)
         LARGE_FONT= ("Helvetica", 10)
         self.button_AdvancedControl["font"]        = LARGE_FONT
         
         self.button_AdvancedControl.bind("<Enter>", lambda event, h=self.button_AdvancedControl: h.configure(bg="yellow"))
-        self.button_AdvancedControl.bind("<Leave>", lambda event, h=self.button_AdvancedControl: h.configure(bg="SystemButtonFace"))
+        self.button_AdvancedControl.bind("<Leave>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#FFFFFF"))
         """Lattice"""
         self.frame_input3 = tk.LabelFrame(self.frame_left, 
                                           height =_height/5, width = _width,
@@ -466,13 +466,13 @@ class ImpactMainWindow(tk.Tk):
         '''Final button'''
         LARGE_FONT= ("Helvetica", 20,'italic')                
         self.button_initial = tk.Button(self.frame_control)
-        self.button_initial["text"]        = "Initial"
+        self.button_initial["text"]        = "Pre-Process"
         self.button_initial["font"]        = LARGE_FONT
         self.button_initial["command"]     = lambda: self.thread_it(self.preprocessing)
         self.button_initial.pack(fill = 'both',expand =1,side = 'left')
         
         self.button_initial.bind("<Enter>", lambda event, h=self.button_initial: h.configure(bg="green"))
-        self.button_initial.bind("<Leave>", lambda event, h=self.button_initial: h.configure(bg="SystemButtonFace"))
+        self.button_initial.bind("<Leave>", lambda event, h=self.button_initial: h.configure(bg="#FFFFFF"))
         
         self.button_run = tk.Button(self.frame_control)
         self.button_run["text"]         = "Run"
@@ -482,16 +482,16 @@ class ImpactMainWindow(tk.Tk):
         self.run_lock = threading.RLock()
         
         self.button_run.bind("<Enter>", lambda event, h=self.button_run: h.configure(bg="green"))
-        self.button_run.bind("<Leave>", lambda event, h=self.button_run: h.configure(bg="SystemButtonFace"))
+        self.button_run.bind("<Leave>", lambda event, h=self.button_run: h.configure(bg="#FFFFFF"))
         
         self.button_plot = tk.Button(self.frame_control)
-        self.button_plot["text"]        = "Plot"
+        self.button_plot["text"]        = "Post-Process"
         self.button_plot["font"]        = LARGE_FONT
         self.button_plot["command"]     = lambda: self.makeAdvancedPlot()
         self.button_plot.pack(fill = 'both',expand =1,side = 'left')
         
         self.button_plot.bind("<Enter>", lambda event, h=self.button_plot: h.configure(bg="green"))
-        self.button_plot.bind("<Leave>", lambda event, h=self.button_plot: h.configure(bg="SystemButtonFace"))
+        self.button_plot.bind("<Leave>", lambda event, h=self.button_plot: h.configure(bg="#FFFFFF"))
         
         self.t= startWindow(self)
         w1  = 400
@@ -503,6 +503,9 @@ class ImpactMainWindow(tk.Tk):
         self.t.overrideredirect(1)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
         self.withdraw()
+        
+
+        
         '''
         self.test = tk.Button(self.frame_left)
         self.test["text"] = "debug"
@@ -528,6 +531,12 @@ class ImpactMainWindow(tk.Tk):
         self.ptcTypeComx.trace('w', self.updatePtc)
         self.ptcMass.trace('w', self.updatePtcType)
         self.ptcCharge.trace('w', self.updatePtcType)
+        
+        
+        '''degue'''
+        self.t.startImpactZ(self)
+        self.makeAdvancedPlot()
+        
     def debug(self):
         self.lattice.convertNtoW(self.lattice.get('0.0', tk.END))
     
@@ -1271,6 +1280,8 @@ class startWindow(tk.Toplevel):
         self.button_close.bind("<Enter>", lambda event, h=self.button_close: h.configure(bg="yellow"))
         self.button_close.bind("<Leave>", lambda event, h=self.button_close: h.configure(bg="SystemButtonFace"))
         
+
+        
     def startImpactT(self,master):
         master.switchToImpactT()
         master.deiconify()
@@ -1345,7 +1356,7 @@ class MyMenu():
         pass
     
     def help_about(self):
-        messagebox.showinfo('About', 'GUI author: Zhicong Liu \n verion 1.0 \n zhicongliu@lbl.gov ')
+        messagebox.showinfo('About', ' Version 1.0 \n\n Kernel author: Ji Qiang \n jqiang@lbl.gov \n\n GUI author: Zhicong Liu \n zhicongliu@lbl.gov ')
         pass
         
 def resource_path(relative_path):
