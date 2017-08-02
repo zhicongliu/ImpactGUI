@@ -126,17 +126,16 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         
         self.button_Particle            = tk.Button(self.frame2,text='Phase Space Plot',
                                                     command = self.makeParticlePlot)
-        self.button_Particle            .grid(row = rowN, column=0, columnspan=2,pady=5 ,padx=5, sticky="nswe")
-#        self.button_ParticleContour     = tk.Button(self.frame2,text='Contour Plot(N)',
-#                                                    command = self.makeParticlePlot)
-#        self.button_ParticleContour     .grid(row = rowN, column=1,  pady=5 ,padx=5, sticky="nswe")
+        self.button_Particle            .grid(row = rowN, column=0,  pady=5 ,padx=5, sticky="nswe")
+        self.button_ParticleDesity1D    = tk.Button(self.frame2,text='Density1D',
+                                                    command = self.ParticleDensityPlot1D)
+        self.button_ParticleDesity1D    .grid(row = rowN, column=1,  pady=5 ,padx=5, sticky="nswe")
         rowN+=1
         
-        self.button_ParticleDensity     = tk.Button(self.frame2,text='Fast Density Plot',
+        self.button_ParticleDensity     = tk.Button(self.frame2,text='Density2D (by Grid)',
                                                     command = self.ParticleDensityPlot)
         self.button_ParticleDensity     .grid( row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
-        
-        self.button_ParticleDensity2    = tk.Button(self.frame2,text='Slow Density Plot',
+        self.button_ParticleDensity2    = tk.Button(self.frame2,text='Density2D (by Ptc)',
                                                     command = self.ParticleDensityPlot2)
         self.button_ParticleDensity2    .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
@@ -201,7 +200,21 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         
         l=ParticleDensityFrame(plotWindow,fileName)
         l.pack()
-                
+        
+    def ParticleDensityPlot1D(self):
+        print(self.__class__.__name__)
+        fileName=filedialog.askopenfilename(parent=self)
+        try:
+            t=open(fileName)
+            t.close()
+        except:
+            return
+        plotWindow = tk.Toplevel(self)
+        plotWindow.title('Plot')
+        
+        l=ParticleDensityFrame1D(plotWindow,fileName)
+        l.pack()
+                    
     def ParticleDensityPlot2(self):
         print(self.__class__.__name__)
         fileName=filedialog.askopenfilename(parent=self)
@@ -721,7 +734,7 @@ class ParticleDensityFrame(PlotParticleBaseFrame):
         y   = self.ParticleDirec[self.ppc2.get()]
         
         self.subfig.clear()
-        self.subfig.hist2d(self.data[x],self.data[y],(100, 100),cmap = 'jet')
+        self.subfig.hist2d(self.data[x],self.data[y],(200, 200),cmap = 'jet')
 
         xmajorFormatter = FormatStrFormatter('%2.2e')
         self.subfig.xaxis.set_major_formatter(xmajorFormatter)
@@ -729,6 +742,27 @@ class ParticleDensityFrame(PlotParticleBaseFrame):
         
         self.subfig.set_xlabel(self.ppc1.get())
         self.subfig.set_ylabel(self.ppc2.get())
+
+        self.canvas.draw()
+        
+class ParticleDensityFrame1D(PlotParticleBaseFrame):
+    def __init__(self, parent,ifile):    
+        PlotParticleBaseFrame.__init__(self, parent, ifile)
+        
+    def plot(self):
+        self.ppc2.pack_forget()
+        self.label_y.pack_forget()
+        x1   = self.data[self.ParticleDirec[self.ppc1.get()]]
+        
+        self.subfig.clear()
+        self.subfig.hist(x1,bins=100)
+
+        #xmajorFormatter = FormatStrFormatter('%2.2e')
+        #self.subfig.xaxis.set_major_formatter(xmajorFormatter)
+        #self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        
+        #self.subfig.set_xlabel(self.ppc1.get())
+        #self.subfig.set_ylabel(self.ppc2.get())
 
         self.canvas.draw()
     
