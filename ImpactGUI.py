@@ -534,8 +534,8 @@ class ImpactMainWindow(tk.Tk):
         
         
         '''degue'''
-        self.t.startImpactZ(self)
-        self.makeAdvancedPlot()
+        #self.t.startImpactZ(self)
+        #self.makeAdvancedPlot()
         
     def debug(self):
         self.lattice.convertNtoW(self.lattice.get('0.0', tk.END))
