@@ -583,10 +583,11 @@ class ImpactMainWindow(tk.Tk):
             return
         self.updateTwissLock = 1
         
-        s1,s2,s3 = float(self.string_sigma[i][0].get()), float(self.string_sigma[i][1].get()), float(self.string_sigma[i][2].get())
-        f, m, k  = float(self.entry_frq.get()),    float(self.ptcMass.get()),      float(self.entry_Ek.get())
-        re=[0]*3
+
         try:
+            s1,s2,s3 = float(self.string_sigma[i][0].get()), float(self.string_sigma[i][1].get()), float(self.string_sigma[i][2].get())
+            f, m, k  = float(self.entry_frq.get()),    float(self.ptcMass.get()),      float(self.entry_Ek.get())
+            re=[0]*3
             if i==1 or i==0:
                 re[0],re[1],re[2] = ConvertFunc.Sigma2Twiss(s1,s2,s3, f,m,k)
             if i==2:
@@ -602,10 +603,11 @@ class ImpactMainWindow(tk.Tk):
         if self.updateTwissLock ==1:
             return
         self.updateTwissLock = 1
-        s1,s2,s3 = float(self.string_twiss[i][0].get()), float(self.string_twiss[i][1].get()), float(self.string_twiss[i][2].get())
-        f, m, k  = float(self.entry_frq.get()),    float(self.ptcMass.get()),      float(self.entry_Ek.get())
-        re=[0]*3
+
         try:
+            s1,s2,s3 = float(self.string_twiss[i][0].get()), float(self.string_twiss[i][1].get()), float(self.string_twiss[i][2].get())
+            f, m, k  = float(self.entry_frq.get()),    float(self.ptcMass.get()),      float(self.entry_Ek.get())
+            re=[0]*3
             if i==1 or i==0:
                 re[0],re[1],re[2] = ConvertFunc.Twiss2Sigma(s1,s2,s3, f,m,k)
             if i==2:
