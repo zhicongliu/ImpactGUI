@@ -583,7 +583,6 @@ class ImpactMainWindow(tk.Tk):
             return
         self.updateTwissLock = 1
         
-
         try:
             s1,s2,s3 = float(self.string_sigma[i][0].get()), float(self.string_sigma[i][1].get()), float(self.string_sigma[i][2].get())
             f, m, k  = float(self.entry_frq.get()),    float(self.ptcMass.get()),      float(self.entry_Ek.get())
