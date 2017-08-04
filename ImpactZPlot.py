@@ -18,12 +18,12 @@ import numpy as np
 _height=300
 _width =200
 
-ADVANCED_PLOT_TYPE= {'Centriod location' :1,
-                     'Rms size'          :2,
-                     'Centriod momentum' :3,
-                     'Rms momentum'      :4,
-                     'Twiss'             :5,
-                     'Emittance'         :6}
+ADVANCED_PLOT_TYPE= {'Centriod location (m)'    :1,
+                     'Rms size (m)'             :2,
+                     'Centriod momentum (MC)'   :3,
+                     'Rms momentum (MC)'        :4,
+                     'Twiss'                    :5,
+                     'Emittance (m-rad)'        :6}
 
 class AdvancedPlotControlFrame(tk.Toplevel):
     """Output"""
@@ -51,9 +51,9 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                            text="Z", value=2)
         self.frame_radio.z.pack(side='left')
         
-        self.plotTypeComx = tk.StringVar(self.frame_plotButton,'Rms size')
+        self.plotTypeComx = tk.StringVar(self.frame_plotButton,'Rms size (m)')
         self.plotType = ttk.Combobox(self.frame_plotButton,text=self.plotTypeComx,
-                                     width = 15,
+                                     width = 20,
                                      values=list(ADVANCED_PLOT_TYPE.keys()))
         self.plotType.pack(side = 'top')
         self.plot = tk.Button(self.frame_plotButton,text='plot',command=self.makePlot)
@@ -76,23 +76,23 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                                 command = self.emitGrowthPlot)
         self.button_emitGrowth      .grid(row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
         self.button_Ek              = tk.Button(self.frame2,text='Kinetic Energy',
-                                                command = lambda: self.energyPlot(3))
+                                                command = lambda: self.energyPlot(3,'Kinetic Energy (MeV)'))
         self.button_Ek              .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
         
         self.button_beta            = tk.Button(self.frame2,text='Beta',
-                                                command = lambda: self.energyPlot(4))
+                                                command = lambda: self.energyPlot(4,'Beta'))
         self.button_beta            .grid(row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
         self.button_gamma           = tk.Button(self.frame2,text='Gamma',
-                                                command = lambda: self.energyPlot(2))
+                                                command = lambda: self.energyPlot(2,'Gamma'))
         self.button_gamma           .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
         
         self.button_rmax            = tk.Button(self.frame2,text='Rmax',
-                                                command = lambda: self.energyPlot(5))
+                                                command = lambda: self.energyPlot(5,'Rmax (m)'))
         self.button_rmax            .grid(row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
         self.button_dw              = tk.Button(self.frame2,text='Absolute phase',
-                                                command = lambda: self.energyPlot(1))
+                                                command = lambda: self.energyPlot(1,'Absolute phase (rad)'))
         self.button_dw              .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
         
@@ -149,13 +149,13 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         l=OverallFrame(plotWindow)
         l.pack()    
         
-    def energyPlot(self,y):
+    def energyPlot(self,y,yLabel):
         print(sys._getframe().f_back.f_code.co_name)
 
         plotWindow = tk.Toplevel(self)
         plotWindow.title(sys._getframe().f_back.f_code.co_name)
         
-        l=PlotFrame(plotWindow,'fort.18',0,y)
+        l=PlotFrame(plotWindow,'fort.18',0,y,yLabel)
         l.pack()
     
     def emitGrowthPlot(self):
@@ -182,7 +182,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         plotWindow = tk.Toplevel(self)
         plotWindow.title(sys._getframe().f_back.f_code.co_name)
         
-        l=PlotFrame(plotWindow,'fort.28',0,3)
+        l=PlotFrame(plotWindow,'fort.28',0,3,'Live particle number')
         l.pack()
         
     def ParticleDensityPlot(self):
@@ -237,7 +237,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         plotWindow = tk.Toplevel(self)
         plotWindow.title('Plot')
         
-        l=PlotFrame(plotWindow,PlotFileName,0,yl)
+        l=PlotFrame(plotWindow,PlotFileName,0,yl,self.plotType.get())
         l.pack()
         
     def makeParticlePlot(self):
@@ -302,7 +302,7 @@ class PlotBaseFrame(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
 
-        self.fig = Figure(figsize=(5,5), dpi=100)
+        self.fig = Figure(figsize=(6,5), dpi=100)
         self.subfig = self.fig.add_subplot(111)
 
         self.canvas = FigureCanvasTkAgg(self.fig, self)
@@ -316,13 +316,13 @@ class PlotBaseFrame(tk.Frame):
 
         
 class PlotFrame(tk.Frame):
-    def __init__(self, parent,PlotFileName,xl,yl):
+    def __init__(self, parent,PlotFileName,xl,yl,labelY):
         tk.Frame.__init__(self, parent)
-        LARGE_FONT= ("Verdana", 12)
-        label = tk.Label(self, font=LARGE_FONT,
-                         text='plot '+PlotFileName+
-                         ' use '+str(xl)+':'+str(yl))
-        label.pack(pady=10,padx=10)
+        #LARGE_FONT= ("Verdana", 12)
+        #label = tk.Label(self, font=LARGE_FONT,
+        #                 text='plot '+PlotFileName+
+        #                 ' use '+str(xl)+':'+str(yl))
+        #label.pack(pady=10,padx=10)
 
         try:
             fin = open(PlotFileName,'r')
@@ -335,10 +335,11 @@ class PlotFrame(tk.Frame):
         x   = [float(xrt[xl]) for xrt in linesList]
         y   = [float(xrt[yl]) for xrt in linesList]
         
-        fig = Figure(figsize=(5,5), dpi=100)
+        fig = Figure(figsize=(7,5), dpi=100)
         subfig = fig.add_subplot(111)
         subfig.plot(x,y)
-        
+        subfig.set_xlabel('Z (m)')
+        subfig.set_ylabel(labelY)
         xmajorFormatter = FormatStrFormatter('%2.2e')
         subfig.yaxis.set_major_formatter(xmajorFormatter)
         box = subfig.get_position()
@@ -449,7 +450,7 @@ class EmitGrowthFrame(PlotBaseFrame):
         fileList        = ['fort.24','fort.25']
         xdataList       = [1,1]
         ydataList       = [7,7]
-        xyLabelList     = ['z drection (m)','emit.Avg.growth']
+        xyLabelList     = ['Z (m)','Avg emit growth in X and Y']
         
         lineType = ['r-','b--']
         
@@ -471,10 +472,15 @@ class EmitGrowthFrame(PlotBaseFrame):
         linesList2  = [line.split() for line in linesList2 ]
         xId = xdataList[0]-1
         yId = ydataList[0]-1
-        x   = [float(xrt[xId]) for xrt in linesList1]
-        start = (float(linesList1[0][yId]) + float(linesList2[0][yId]))/2
-        y   = [(float(linesList1[k][yId]) + float(linesList2[k][yId]))/2 / start -1 for k in range(len(linesList1))]
-        
+        try:
+            x   = [float(xrt[xId]) for xrt in linesList1]
+            start = (float(linesList1[0][yId]) + float(linesList2[0][yId]))/2
+            if start < 1.0e-16:
+                start=1.0e-16
+            y   = [(float(linesList1[k][yId]) + float(linesList2[k][yId]))/2 / start -1 for k in range(len(linesList1))]
+        except:
+            print("  ERRPR! Can't read data '" + fileList[1] + "'")
+            
         self.subfig.clear()
         self.subfig.plot(x, y, lineType[0], linewidth=2, label='emit.growth')
         self.subfig.set_xlabel(xyLabelList[0])
@@ -626,12 +632,12 @@ class PlotHighorderFrame(PlotHighOrderBaseFrame):
         self.canvas.draw()
     
 class PlotParticleBaseFrame(tk.Frame):
-    ParticleDirec = {'X'    :0,
-                     'Px'   :1,
-                     'Y'    :2,
-                     'Py'   :3,
-                     'Z'    :4,
-                     'Pz'   :5}
+    ParticleDirec = {'X (m)'        :0,
+                     'Px (MC)'      :1,
+                     'Y (m)'        :2,
+                     'Py (MC)'      :3,
+                     'Z (m)'        :4,
+                     'Pz (MC)'      :5}
     data = np.array([])
     def __init__(self, parent, PlotFileName):
         tk.Frame.__init__(self, parent)
@@ -648,18 +654,18 @@ class PlotParticleBaseFrame(tk.Frame):
         self.label_x        = tk.Label(self.frame_PlotParticleControl, text="Axi1:")
         self.label_x.pack(side='left')
 
-        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X')
+        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X (m)')
         self.ppc1       = ttk.Combobox(self.frame_PlotParticleControl,text=self.ppc1Value,
-                                       width=3,
-                                       values=['X', 'Px', 'Y', 'Py','Z','Pz'])
+                                       width=7,
+                                       values=['X (m)', 'Px (MC)', 'Y (m)', 'Py (MC)','Z (m)','Pz (MC)'])
         self.ppc1.pack(fill = 'both',expand =1,side = 'left')
         
         self.label_y        = tk.Label(self.frame_PlotParticleControl, text="Axi2:")
         self.label_y.pack(side='left')
-        self.ppc2Value  = tk.StringVar(self.frame_PlotParticleControl,'Y')
+        self.ppc2Value  = tk.StringVar(self.frame_PlotParticleControl,'Y (m)')
         self.ppc2       = ttk.Combobox(self.frame_PlotParticleControl,text=self.ppc2Value,
-                                       width=3,
-                                       values=['X', 'Px', 'Y', 'Py','Z','Pz'])
+                                       width=7,
+                                       values=['X (m)', 'Px (MC)', 'Y (m)', 'Py (MC)','Z (m)','Pz (MC)'])
         self.ppc2.pack(fill = 'both',expand =1,side = 'left')
         
         LARGE_FONT= ("Verdana", 12)
@@ -674,7 +680,7 @@ class PlotParticleBaseFrame(tk.Frame):
         x   = self.ParticleDirec[self.ppc1.get()]
         y   = self.ParticleDirec[self.ppc2.get()]
         
-        self.fig = Figure(figsize=(6,5), dpi=100)
+        self.fig = Figure(figsize=(7,5), dpi=100)
         self.subfig = self.fig.add_subplot(111)
         self.subfig.scatter(self.data[x],self.data[y],s=1)
         
@@ -706,6 +712,8 @@ class PhaseSpaceFrame(PlotParticleBaseFrame):
         self.subfig.xaxis.set_major_formatter(xmajorFormatter)
         self.subfig.yaxis.set_major_formatter(xmajorFormatter)
         
+        self.subfig.set_xlabel(self.ppc1.get())
+        self.subfig.set_ylabel(self.ppc2.get())
         self.canvas.draw()
         
     def quit(self):
@@ -748,8 +756,8 @@ class ParticleDensityFrame1D(PlotParticleBaseFrame):
         #self.subfig.xaxis.set_major_formatter(xmajorFormatter)
         #self.subfig.yaxis.set_major_formatter(xmajorFormatter)
         
-        #self.subfig.set_xlabel(self.ppc1.get())
-        #self.subfig.set_ylabel(self.ppc2.get())
+        self.subfig.set_xlabel(self.ppc1.get())
+        self.subfig.set_ylabel('Density')
 
         self.canvas.draw()
             
