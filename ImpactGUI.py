@@ -534,8 +534,8 @@ class ImpactMainWindow(tk.Tk):
         
         
         '''degue'''
-        #self.t.startImpactZ(self)
-        #self.makeAdvancedPlot()
+        self.t.startImpactZ(self)
+        self.makeAdvancedPlot()
         
     def debug(self):
         self.lattice.convertNtoW(self.lattice.get('0.0', tk.END))
@@ -652,6 +652,7 @@ class ImpactMainWindow(tk.Tk):
             self.AdvancedPlot.destroy()
         except:
             pass
+        
         try:
             self.label_logo.config(image = self.logo_ImpactZ)
         except:
@@ -1394,4 +1395,13 @@ root.mainloop()
 root.console.stop()
 '''
             pyinsteller -F -add-data "icon\ImpactT.gif;icon" ImpactGUI.py
+'''
+
+'''
+1, label at plot
+2, unit
+3, plot size/location
+4, emit growth divided by zero
+ok:
+1,3,4
 '''
