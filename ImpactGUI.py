@@ -5,6 +5,7 @@
 
 import os, sys, threading, subprocess
 import math
+from bokeh.core.tests.test_query import plot
 
 if sys.version_info[0] < 3:
     print("Error: need python version 3.x!")
@@ -22,8 +23,6 @@ import ImpactTSet
 import ImpactTPlot
 import ImpactZSet
 import ImpactZPlot
-
-
 
 _MPINAME   ='mpirun'
 _IMPACT_T_NAME ='ImpactTv1.8b.exe'
@@ -104,6 +103,18 @@ class ImpactMainWindow(tk.Tk):
         for item in ImpactMainWindow.LABEL_TEXT:
             print(item)    
     def createWidgets(self, master):
+        self.t= startWindow(self)
+        w1  = 400
+        h1  = 300
+        ws1 = self.t.winfo_screenwidth() # width of the screen
+        hs1 = self.t.winfo_screenheight() # height of the screen
+        x1 = (ws1/2) - (w1/2)
+        y1 = (hs1/2) - (h1/2)
+        self.t.overrideredirect(1)
+        self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
+        self.withdraw()
+        
+        
         self.frame_left = tk.Frame(self, height =_height, width = _width)
         self.frame_left.grid(row=0,column=0)
         
@@ -111,8 +122,6 @@ class ImpactMainWindow(tk.Tk):
         self.frame_logo.pack(side = 'top')
         #print(resource_path(os.path.join('icon','ImpactT.gif')))
         try:
-            #self.logo_ImpactT = tk.PhotoImage(file = resource_path('/icon/ImpactT.gif'), format="gif")
-            #self.logo_ImpactZ = tk.PhotoImage(file = resource_path('/icon/ImpactZ.gif'), format="gif")
             self.logo_ImpactT = tk.PhotoImage(file = resource_path(os.path.join('icon','ImpactT.gif')), format="gif")
             self.logo_ImpactZ = tk.PhotoImage(file = resource_path(os.path.join('icon','ImpactZ.gif')), format="gif")
             self.label_logo  = tk.Label(self.frame_logo,image = self.logo_ImpactT)
@@ -135,10 +144,13 @@ class ImpactMainWindow(tk.Tk):
         #self.frame_input1.grid(row=1,column=0,columnspan=2,sticky='W')
         self.frame_input1.pack(side = 'right')
         
+        self.frame_CPU = tk.Frame(self.frame_input1, height =_height/10, width = _width)
+        self.frame_CPU.pack(side = 'top')
+        
         vcmd = (self.register(self.validate),
                 '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
-        self.label_noc1 = tk.Label(self.frame_input1, text="# of cores at Y",pady=1)
-        self.entry_noc1 = tk.Entry(self.frame_input1, 
+        self.label_noc1 = tk.Label(self.frame_CPU, text="# of cores at Y",pady=1)
+        self.entry_noc1 = tk.Entry(self.frame_CPU, 
                                    validate = 'key',
                                    validatecommand = vcmd,
                                    width=4)
@@ -146,8 +158,8 @@ class ImpactMainWindow(tk.Tk):
         self.label_noc1.pack(side='left')
         self.entry_noc1.pack(side='left')
 
-        self.label_noc2 = tk.Label(self.frame_input1, text="# of cores at Z",pady=1)
-        self.entry_noc2 = tk.Entry(self.frame_input1, 
+        self.label_noc2 = tk.Label(self.frame_CPU, text="# of cores at Z",pady=1)
+        self.entry_noc2 = tk.Entry(self.frame_CPU, 
                                    validate = 'key',
                                    validatecommand = vcmd,
                                    width=4)
@@ -156,8 +168,20 @@ class ImpactMainWindow(tk.Tk):
         self.entry_noc2.pack(side='left')
         
         self.GPUflag   = tk.IntVar()
-        self.check_GPU  = tk.Checkbutton(self.frame_input1, text="GPU", variable=self.GPUflag)
+        self.check_GPU  = tk.Checkbutton(self.frame_CPU, text="GPU", variable=self.GPUflag)
         self.check_GPU.pack(side='left')
+        '''
+        self.label_dic = tk.Label(self.frame_input1, text="Work Dictionary",pady=1)
+        self.label_dic.pack(side='left')
+        '''
+        self.entry_dic = tk.Entry(self.frame_input1, width=45)
+        self.entry_dic.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        self.entry_dic.pack(side='left')
+        
+        self.button_dic = tk.Button(self.frame_input1)
+        self.button_dic["text"]        = "..."
+        self.button_dic["command"]     = lambda: self.changeDic()
+        self.button_dic.pack(side = 'left')
         
         """Frame2: Time step"""
         self.frame1 = tk.Frame(self.frame_left, 
@@ -493,16 +517,7 @@ class ImpactMainWindow(tk.Tk):
         self.button_plot.bind("<Enter>", lambda event, h=self.button_plot: h.configure(bg="green"))
         self.button_plot.bind("<Leave>", lambda event, h=self.button_plot: h.configure(bg="#FFFFFF"))
         
-        self.t= startWindow(self)
-        w1  = 400
-        h1  = 300
-        ws1 = self.t.winfo_screenwidth() # width of the screen
-        hs1 = self.t.winfo_screenheight() # height of the screen
-        x1 = (ws1/2) - (w1/2)
-        y1 = (hs1/2) - (h1/2)
-        self.t.overrideredirect(1)
-        self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
-        self.withdraw()
+
         
 
         
@@ -534,14 +549,25 @@ class ImpactMainWindow(tk.Tk):
         
         
         '''degue'''
-        #self.t.startImpactZ(self)
+        #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
-        
+
     def debug(self):
         self.lattice.convertNtoW(self.lattice.get('0.0', tk.END))
     
     def debug2(self):
         self.lattice.updateHide()
+        
+    def changeDic(self):
+        filename = filedialog.askdirectory(parent=self)
+        if filename=='':
+            return
+                
+        os.chdir(filename)
+        
+        self.entry_dic.delete(0, 'end')
+        self.entry_dic.insert(0, filename)
+        print(filename)
     
     def updatePtcType(self,*args):
         if self.updatePtcTypeLock ==1:
@@ -599,7 +625,7 @@ class ImpactMainWindow(tk.Tk):
             pass
         self.updateTwissLock = 0
     def updateSigma(self,i):
-        if self.updateTwissLock ==1:
+        if self.updateTwissLock == 1:
             return
         self.updateTwissLock = 1
 
@@ -621,6 +647,11 @@ class ImpactMainWindow(tk.Tk):
             pass
         self.updateTwissLock = 0
     def preprocessing(self):
+        try:
+            os.chdir(self.entry_dic.get())
+        except:
+            print("Error: cannot get to the dictionary" + self.entry_dic.get())
+            return
         if self.AccKernel=='ImpactT':
             np = self.save('ImpactT.in')
             self.button_run     .config(state='disable')
@@ -727,23 +758,37 @@ class ImpactMainWindow(tk.Tk):
     def startImpact(self):
         if self.AccKernel=='ImpactT':
             np = self.save('ImpactT.in')
+            try:
+                os.chdir(self.entry_dic.get())
+            except:
+                print("Error: cannot get to the dictionary" + self.entry_dic.get())
+                return
+            
+            ImpactExe = os.path.join(os.path.dirname(os.path.abspath(__file__)),_IMPACT_T_NAME)
     
             if np==1:
-                cmd = './'+_IMPACT_T_NAME
+                cmd = ImpactExe
             elif np>1:
-                cmd = _MPINAME+' -n '+str(np)+' ./'+_IMPACT_T_NAME
-            
+                cmd = _MPINAME+' -n '+str(np)+' '+ImpactExe
+            print(cmd)
             p=subprocess.Popen(cmd,stdout=subprocess.PIPE,bufsize=1)
             for line in iter(p.stdout.readline,b''):
                 print(('>>{}'.format(line.rstrip())))
             p.stdout.close()
         elif self.AccKernel=='ImpactZ':
             np = self.save('test.in')
+            try:
+                os.chdir(self.entry_dic.get())
+            except:
+                print("Error: cannot get to the dictionary" + self.entry_dic.get())
+                return
+            
+            ImpactExe = os.path.join(os.path.dirname(os.path.abspath(__file__)),_IMPACT_Z_NAME)
     
             if np==1:
-                cmd = './'+_IMPACT_Z_NAME
+                cmd = ImpactExe
             elif np>1:
-                cmd = _MPINAME+' -n '+str(np)+' ./'+_IMPACT_Z_NAME
+                cmd = _MPINAME+' -n '+str(np)+' '+ImpactExe
             
             p=subprocess.Popen(cmd,stdout=subprocess.PIPE,bufsize=1)
             for line in iter(p.stdout.readline,b''):
@@ -944,14 +989,19 @@ class ImpactMainWindow(tk.Tk):
         return linesList
         
     def load(self,inputFileName):
+        
         if self.AccKernel=='ImpactT':
-            return self.loadImpactT(inputFileName)
+            self.loadImpactT(inputFileName)
         elif self.AccKernel=='ImpactZ':
-            return self.loadImpactZ(inputFileName)
+            self.loadImpactZ(inputFileName)
         else:
             print('Cannot find kernel: '+self.AccKernel)
-            
-            
+        path = os.path.dirname(os.path.abspath(inputFileName))
+        os.chdir(path)
+        print(path)
+        self.entry_dic.delete(0, 'end')
+        self.entry_dic.insert(0,path)
+
     def loadImpactT(self,inputFileName):
         linesList = self.readInput(inputFileName)
         if linesList ==False:
@@ -982,6 +1032,8 @@ class ImpactMainWindow(tk.Tk):
         self.Flagerr.set(0 if int(linesList[2][3])==0 else 1)
         
         invermap = dict(map(lambda t:(t[1],t[0]), DIAGNOSTIC_TYPE.items()))
+        if linesList[2][4] not in ['1','2','3']:
+            linesList[2][4] = '3'
         self.Flagdiag.set(invermap[linesList[2][4]])
         
         self.Flagimag.set(0 if int(linesList[2][5])==0 else 1)
@@ -1004,7 +1056,11 @@ class ImpactMainWindow(tk.Tk):
         
         '''Distribution'''
         invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
-        self.distTypeComx.set(invermap[linesList[4][0]])
+        try:
+            self.distTypeComx.set(invermap[linesList[4][0]])
+        except:
+            self.distTypeComx.set(invermap['3'])
+            print('Cannot recognize distribution type, Set as waterbag')
         self.FlagRestart.set(0 if int(linesList[4][1])==0 else 1)
         self.Nemission.set(linesList[4][3])
         self.Temission.set(linesList[4][4])
@@ -1404,4 +1460,8 @@ root.console.stop()
 4, emit growth divided by zero
 ok:
 1,3,4
+'''
+
+'''
+1, density plot
 '''

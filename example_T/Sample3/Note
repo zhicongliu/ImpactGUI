@@ -1,0 +1,2 @@
+Note: The real data in the 3D rf field file 1T1.T7 needs to be converted into complex format (x,y) in the
+new version of the IMPACT-T code.
