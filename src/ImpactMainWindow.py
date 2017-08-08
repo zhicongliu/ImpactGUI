@@ -5,7 +5,6 @@
 
 import os, sys, threading, subprocess
 import math
-from bokeh.core.tests.test_query import plot
 
 if sys.version_info[0] < 3:
     print("Error: need python version 3.x!")
