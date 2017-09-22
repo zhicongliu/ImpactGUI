@@ -450,11 +450,11 @@ class ImpactMainWindow(tk.Tk):
         self.button_AdvancedControl.bind("<Leave>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#FFFFFF"))
         """Lattice"""
         self.frame_input3 = tk.LabelFrame(self.frame_left, 
-                                          height =_height/5, width = _width,
+                                          height =_height/6, width = _width,
                                           text="Lattice")
         self.frame_input3.pack(fill="both", expand=1, side=tk.TOP)
         
-        self.lattice = LatticeFrame.LatticeFrameC(self.frame_input3, height = _height/5,width = _width)
+        self.lattice = LatticeFrame.LatticeFrameC(self.frame_input3, height = _height/6,width = _width)
         self.lattice.pack(fill="both", expand=1, side=tk.TOP)
               
         """Console"""

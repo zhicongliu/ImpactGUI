@@ -6,7 +6,7 @@ Created on Jul 5, 2017
 import tkinter as tk
 import sys, threading
 _TextWidth = 70
-_TextHeight = 10
+_TextHeight = 9
 ELEMENT_TYPE    = {'DRIFT'      :   '0',
                    'QUADM'      :   '1',
                    'CONSTFOC'   :   '2',
