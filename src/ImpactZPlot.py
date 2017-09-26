@@ -12,6 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter 
 import matplotlib.pyplot as plt
+#import scipy.ndimage
 from scipy.stats import gaussian_kde
 import numpy as np
 
@@ -126,7 +127,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
 
         scaling = float(master.entry_frq.get())*2*3.1415926/299792458
         self.button_Particle            = tk.Button(self.frame2,text='Phase Space Plot',
-                                                    command = lambda:self.makeParticlePlot(scaling))
+                                                    command = lambda:self.ParticlePlot(scaling))
         self.button_Particle            .grid(row = rowN, column=0,  pady=5 ,padx=5, sticky="nswe")
         self.button_ParticleDesity1D    = tk.Button(self.frame2,text='Density1D',
                                                     command = lambda:self.ParticleDensityPlot1D(scaling))
@@ -186,7 +187,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         l=PlotFrame(plotWindow,'fort.28',0,3,'Live particle number')
         l.pack()
         
-    def makeParticlePlot(self,scaling):
+    def ParticlePlot(self,scaling):
         print(self.__class__.__name__)
         filename = filedialog.askopenfilename(parent=self)
         try:
@@ -484,7 +485,7 @@ class EmitGrowthFrame(PlotBaseFrame):
         except:
             print("  ERRPR! Can't read data '" + fileList[1] + "'")
             
-        self.subfig.clear()
+        self.subfig.cla()
         self.subfig.plot(x, y, lineType[0], linewidth=2, label='emit.growth')
         self.subfig.set_xlabel(xyLabelList[0])
         self.subfig.set_ylabel(xyLabelList[1])
@@ -507,7 +508,7 @@ class TemperatureFrame(PlotBaseFrame):
         if os.path.exists(plotPath) == False:
             os.makedirs(plotPath)
             
-        self.subfig.clear()
+        self.subfig.cla()
         for i in range(1,picNum+1):
             try:
                 fin = open(arg[i],'r')
@@ -596,7 +597,7 @@ class PlotMaxFrame(PlotHighOrderBaseFrame):
     def plot(self):
         y   = self.ParticleDirec[self.ppc1.get()]
         
-        self.subfig.clear()
+        self.subfig.cla()
         self.subfig.plot(self.data[0],self.data[y])
     
         xmajorFormatter = FormatStrFormatter('%2.2E')
@@ -617,7 +618,7 @@ class PlotHighorderFrame(PlotHighOrderBaseFrame):
     def plot(self):
         y   = self.ParticleDirec[self.ppc1.get()]
         
-        self.subfig.clear()
+        self.subfig.cla()
         self.subfig.plot(self.data[0],self.data[y])
         
         xmajorFormatter = FormatStrFormatter('%2.2E')
@@ -635,12 +636,19 @@ class PlotHighorderFrame(PlotHighOrderBaseFrame):
         self.canvas.draw()
     
 class ParticleBaseFrame(tk.Frame):
-    ParticleDirec = {'X (mm)'       :0,
+    ParticleDirecWithUnit = {'X (mm)'       :0,
                      'Px (MC)'      :1,
                      'Y (mm)'       :2,
                      'Py (MC)'      :3,
                      'Z (deg)'      :4,
                      'Pz (MC)'      :5}
+    ParticleDirec = {'X'       :0,
+                     'Px'      :1,
+                     'Y'       :2,
+                     'Py'      :3,
+                     'Z'       :4,
+                     'Pz'      :5}
+    DefaultUnit = ['mm','MC','mm','MC','deg','MC']
     data = np.array([])
     def __init__(self, parent, PlotFileName,scaling):
         tk.Frame.__init__(self, parent)
@@ -682,21 +690,35 @@ class ParticleBaseFrame(tk.Frame):
         self.scalingY.insert(0, '1.0')
         self.scalingY.pack(fill = 'both',expand =1,side = 'left')
         
+        self.label_unitX        = tk.Label(self.frame_PlotParticleControl, text="UnitAxi1:")
+        self.label_unitX.pack(side='left')
+        self.unitX       = tk.Entry(self.frame_PlotParticleControl,  width=6)
+        self.unitX.insert(0, 'mm')
+        self.unitX.pack(fill = 'both',expand =1,side = 'left')
+        
+        self.label_unitY        = tk.Label(self.frame_PlotParticleControl, text="UnitAxi2:")
+        self.label_unitY.pack(side='left')
+        self.unitY       = tk.Entry(self.frame_PlotParticleControl,  width=6)
+        self.unitY.insert(0, 'MC')
+        self.unitY.pack(fill = 'both',expand =1,side = 'left')
+        
         self.label_x        = tk.Label(self.frame_PlotParticleControl, text="Axi1:")
         self.label_x.pack(side='left')
 
-        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X (mm)')
+        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X')
         self.ppc1       = ttk.Combobox(self.frame_PlotParticleControl,text=self.ppc1Value,
-                                       width=7,
-                                       values=['X (mm)', 'Px (MC)', 'Y (mm)', 'Py (MC)','Z (deg)','Pz (MC)'])
+                                       width=5,
+                                       values=['X', 'Px', 'Y', 'Py','Z','Pz'])
+        #                               values=['X (mm)', 'Px (MC)', 'Y (mm)', 'Py (MC)','Z (deg)','Pz (MC)'])
         self.ppc1.pack(fill = 'both',expand =1,side = 'left')
         
         self.label_y        = tk.Label(self.frame_PlotParticleControl, text="Axi2:")
         self.label_y.pack(side='left')
-        self.ppc2Value  = tk.StringVar(self.frame_PlotParticleControl,'Px (MC)')
+        self.ppc2Value  = tk.StringVar(self.frame_PlotParticleControl,'Px')
         self.ppc2       = ttk.Combobox(self.frame_PlotParticleControl,text=self.ppc2Value,
-                                       width=7,
-                                       values=['X (mm)', 'Px (MC)', 'Y (mm)', 'Py (MC)','Z (deg)','Pz (MC)'])
+                                       width=5,
+                                       values=['X', 'Px', 'Y', 'Py','Z','Pz'])
+        #                               values=['X (mm)', 'Px (MC)', 'Y (mm)', 'Py (MC)','Z (deg)','Pz (MC)'])
         self.ppc2.pack(fill = 'both',expand =1,side = 'left')
         
         LARGE_FONT= ("Verdana", 12)
@@ -707,6 +729,9 @@ class ParticleBaseFrame(tk.Frame):
         self.button_ppc["font"] = LARGE_FONT
         self.button_ppc["command"] = self.plot
         self.button_ppc.pack(fill = 'both',expand =1,side = 'right')
+        
+        self.ppc1Value.trace('w',lambda a,b,c,direc='X': self.update(direc))
+        self.ppc2Value.trace('w',lambda a,b,c,direc='Y': self.update(direc))
 
         x   = self.ParticleDirec[self.ppc1.get()]
         y   = self.ParticleDirec[self.ppc2.get()]
@@ -726,8 +751,28 @@ class ParticleBaseFrame(tk.Frame):
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
+    def update(self,direction):
+        if direction == 'X':
+            self.scalingX.delete(0, 'end')
+            self.scalingX.insert(0, '1.0')
+            self.unitX.delete(0, 'end')
+            try:
+                ind = self.ParticleDirec[self.ppc1.get()]
+                self.unitX.insert(0, self.DefaultUnit[ind])
+            except:
+                pass
+        elif direction == 'Y':
+            self.scalingY.delete(0, 'end')
+            self.scalingY.insert(0, '1.0')
+            self.unitY.delete(0, 'end')
+            try:
+                ind = self.ParticleDirec[self.ppc2.get()]
+                self.unitY.insert(0, self.DefaultUnit[ind])
+            except:
+                pass
+        else:
+            print("Warning: no this direction")
 
-          
 class ParticleFrame(ParticleBaseFrame):
     def __init__(self, parent, PlotFileName,scaling):
         ParticleBaseFrame.__init__(self, parent,PlotFileName,scaling)
@@ -736,20 +781,25 @@ class ParticleFrame(ParticleBaseFrame):
     def plot(self):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         yData   = self.data[self.ParticleDirec[self.ppc2.get()]] * float(self.scalingY.get())
-
-        self.subfig.clear()
+        
+        #self.fig.clf()
+        #self.subfig = self.fig.add_subplot(111)
+        self.subfig.cla()
+        
         self.subfig.scatter(xData,yData,s=1)
+        #self.subfig.relim()
+        self.subfig.autoscale()
         
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
         yMax = np.max(abs(yData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
-        if yMax>100 or yMax<0.01:
+        if yMax>1000 or yMax<0.001:
             self.subfig.yaxis.set_major_formatter(sciFormatter)
         
-        self.subfig.set_xlabel(self.ppc1.get())
-        self.subfig.set_ylabel(self.ppc2.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
+        self.subfig.set_ylabel(self.ppc2.get()+' ('+self.unitY.get()+')')
         self.canvas.draw()
         
     def quit(self):
@@ -763,6 +813,9 @@ class ParticleDensityFrame_weight1D(ParticleBaseFrame):
         self.ppc2.pack_forget()
         self.label_y.pack_forget()
         
+        self.unitY.pack_forget()
+        self.label_unitY.pack_forget()
+        
         self.label_scalingY.pack_forget()
         self.scalingY.pack_forget()
         
@@ -771,7 +824,7 @@ class ParticleDensityFrame_weight1D(ParticleBaseFrame):
     def plot(self):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         
-        self.subfig.clear()
+        self.subfig.cla()
         
         nx = 200
         
@@ -802,10 +855,10 @@ class ParticleDensityFrame_weight1D(ParticleBaseFrame):
         
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
         
-        self.subfig.set_xlabel(self.ppc1.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
         self.subfig.set_ylabel('Density')
 
         self.canvas.draw()        
@@ -816,7 +869,7 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
         self.label_gridSizeX        = tk.Label(self.frame_PlotParticleControl, text="GridSize:")
         self.label_gridSizeX.pack(side='left')
         self.gridSizeX       = tk.Entry(self.frame_PlotParticleControl,  width=5)
-        self.gridSizeX.insert(0, '100')
+        self.gridSizeX.insert(0, '200')
         self.gridSizeX.pack(fill = 'both',expand =1,side = 'left')
         
         '''
@@ -827,30 +880,32 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
         self.gridSizeY.pack(fill = 'both',expand =1,side = 'left')
         '''
         
-        self.button_ppc["text"] = "GridDensityPlot"
+        '''
+        self.button_ppc["text"] = "ContourPlot"
         LARGE_FONT= ("Verdana", 12)
         self.button_ppc1=tk.Button(self.frame_PlotParticleControl)
-        self.button_ppc1["text"] = "ContourPlot"
+        self.button_ppc1["text"] = "gridDensity"
         self.button_ppc1["foreground"] = "red"
         self.button_ppc1["bg"] = "yellow"
         self.button_ppc1["font"] = LARGE_FONT
-        self.button_ppc1["command"] = lambda:self.plot(flag = 'ContourPlot')
+        self.button_ppc1["command"] = lambda:self.plot(flag = 'gridDensity')
         self.button_ppc1.pack(fill = 'both',expand =1,side = 'right')
+        '''
         
         self.plot()
         
-    def plot(self,flag='gridDensity'):
+    def plot(self,flag='ContourPlot'):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         yData   = self.data[self.ParticleDirec[self.ppc2.get()]] * float(self.scalingY.get())
         
-        self.subfig.clear()
+        self.subfig.cla()
         
         try:
             nx=int(self.gridSizeX.get())
             ny=int(self.gridSizeX.get())
         except:
-            nx=100
-            ny=100
+            nx=200
+            ny=200
             print("Warning: cannot get gridSizeX or gridSizeY, set to 100")
         if nx<10:
             nx=10
@@ -889,14 +944,16 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
             count[iy+1,ix+1] += (    ab) * (    cd) 
             pass
         
-        #count[count == 0.0] = np.nan
+        count[count == 0.0] = -0.0000001
         tmap = plt.cm.jet
-        tmap.set_under('white',1.)
-        
+        print(tmap)
+        tmap.set_under('white',0.)
+        #tmap.set_bad('white',0.)
         if flag=='ContourPlot':
             x = np.linspace(xMin, xMax, nx)
             y = np.linspace(yMin, yMax, ny)
-            self.msh = self.subfig.contourf(x, y, count, 9,interpolation='bilinear',cmap = tmap, vmin=0.0000001)
+            #count = scipy.ndimage.zoom(count, 3)
+            self.msh = self.subfig.contourf(x, y, count,level=12,interpolation='gaussian',cmap =tmap , vmin=0.0001)
         else:
             self.msh = self.subfig.imshow(count, origin = "lower", interpolation='bilinear', 
                                       cmap=tmap,vmin=0.0000001,
@@ -910,9 +967,9 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
         yMax = np.max(abs(yData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
-        if yMax>100 or yMax<0.01:
+        if yMax>1000 or yMax<0.001:
             self.subfig.yaxis.set_major_formatter(sciFormatter)
         '''
         ntick = 7
@@ -926,8 +983,8 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
         self.subfig.set_yticks(ticky)
         self.subfig.set_yticklabels(labely)
 '''
-        self.subfig.set_xlabel(self.ppc1.get())
-        self.subfig.set_ylabel(self.ppc2.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
+        self.subfig.set_ylabel(self.ppc2.get()+' ('+self.unitY.get()+')')
 
         self.canvas.draw()
         
@@ -944,15 +1001,15 @@ class ParticleDensityFrame1D(ParticleBaseFrame):
     def plot(self):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         
-        self.subfig.clear()
+        self.subfig.cla()
         self.subfig.hist(xData,bins=100)
 
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
         
-        self.subfig.set_xlabel(self.ppc1.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
         self.subfig.set_ylabel('Density')
 
         self.canvas.draw()
@@ -966,19 +1023,19 @@ class ParticleDensityFrame2D(ParticleBaseFrame):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         yData   = self.data[self.ParticleDirec[self.ppc2.get()]] * float(self.scalingY.get())
         
-        self.subfig.clear()
+        self.subfig.cla()
         self.subfig.hist2d(xData,yData,(100, 100),cmap = 'jet')
 
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
         yMax = np.max(abs(yData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
-        if yMax>100 or yMax<0.01:
+        if yMax>1000 or yMax<0.001:
             self.subfig.yaxis.set_major_formatter(sciFormatter)
         
-        self.subfig.set_xlabel(self.ppc1.get())
-        self.subfig.set_ylabel(self.ppc2.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
+        self.subfig.set_ylabel(self.ppc2.get()+' ('+self.unitY.get()+')')
 
         self.canvas.draw()
         
@@ -991,7 +1048,7 @@ class ParticleDensityFrame2D_slow(ParticleBaseFrame):
         xData   = self.data[self.ParticleDirec[self.ppc1.get()]] * float(self.scalingX.get())
         yData   = self.data[self.ParticleDirec[self.ppc2.get()]] * float(self.scalingY.get())
         
-        self.subfig.clear()       
+        self.subfig.cla()       
         '''Calculate the point density'''
         xy = np.vstack([xData,yData])
         z = gaussian_kde(xy)(xy)
@@ -1005,12 +1062,12 @@ class ParticleDensityFrame2D_slow(ParticleBaseFrame):
         sciFormatter = FormatStrFormatter('%2.2e')
         xMax = np.max(abs(xData))
         yMax = np.max(abs(yData))
-        if xMax>100 or xMax<0.01:
+        if xMax>1000 or xMax<0.001:
             self.subfig.xaxis.set_major_formatter(sciFormatter)
-        if yMax>100 or yMax<0.01:
+        if yMax>1000 or yMax<0.001:
             self.subfig.yaxis.set_major_formatter(sciFormatter)
         
-        self.subfig.set_xlabel(self.ppc1.get())
-        self.subfig.set_ylabel(self.ppc2.get())
+        self.subfig.set_xlabel(self.ppc1.get()+' ('+self.unitX.get()+')')
+        self.subfig.set_ylabel(self.ppc2.get()+' ('+self.unitY.get()+')')
 
         self.canvas.draw()
