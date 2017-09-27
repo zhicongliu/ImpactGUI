@@ -1322,7 +1322,7 @@ class startWindow(tk.Toplevel):
         self.button_ImpactT.pack(fill = 'both',expand =1,side = 'left')
         
         self.button_ImpactT.bind("<Enter>", lambda event, h=self.button_ImpactT: h.configure(bg="yellow"))
-        self.button_ImpactT.bind("<Leave>", lambda event, h=self.button_ImpactT: h.configure(bg="SystemButtonFace"))
+        self.button_ImpactT.bind("<Leave>", lambda event, h=self.button_ImpactT: h.configure(bg="#FFFFFF"))
 
         
         self.button_ImpactZ = tk.Button(self.frame,text='ImpactZ',font = LARGE_FONT,
@@ -1330,14 +1330,14 @@ class startWindow(tk.Toplevel):
         self.button_ImpactZ.pack(fill = 'both',expand =1,side = 'left')
         
         self.button_ImpactZ.bind("<Enter>", lambda event, h=self.button_ImpactZ: h.configure(bg="yellow"))
-        self.button_ImpactZ.bind("<Leave>", lambda event, h=self.button_ImpactZ: h.configure(bg="SystemButtonFace"))
+        self.button_ImpactZ.bind("<Leave>", lambda event, h=self.button_ImpactZ: h.configure(bg="#FFFFFF"))
         
         self.button_close = tk.Button(self,text='QUIT',font = LARGE_FONT,
                                         command = lambda: master.quit())
         self.button_close.pack(fill = 'both',expand =0,side = 'bottom')
         
         self.button_close.bind("<Enter>", lambda event, h=self.button_close: h.configure(bg="yellow"))
-        self.button_close.bind("<Leave>", lambda event, h=self.button_close: h.configure(bg="SystemButtonFace"))
+        self.button_close.bind("<Leave>", lambda event, h=self.button_close: h.configure(bg="#FFFFFF"))
         
 
         
