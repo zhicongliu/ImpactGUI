@@ -265,26 +265,17 @@ class ImpactMainWindow(tk.Tk):
 
         
         """Twiss"""
-        twisswidth = 9
+        twisswidth = [9,11,11]
         self.frame_Twiss = tk.LabelFrame(self.frame1, 
                                          height =_height/2, width = _width, text="Beam Twiss")
         self.frame_Twiss.pack(fill = 'y',side = 'left')
-
-        self.twiss_s = []
-        self.twiss_chara = ["sigma(m)","sigmaP","muxpx"]
-        for column in range(3):
-            label = tk.Label(self.frame_Twiss, text=self.twiss_chara[column], 
-                            borderwidth=0,
-                            width=twisswidth)
-            label.grid(row=0, column=column+1, sticky="ns", padx=1, pady=1)
-            self.twiss_s.append(label)
             
         self.twiss_t = []
         self.twiss_Tchara = ["alpha","beta","emittance"]
         for column in range(3):
             label = tk.Label(self.frame_Twiss, text=self.twiss_Tchara[column], 
                             borderwidth=0,
-                            width=twisswidth)
+                            width=twisswidth[column])
             label.grid(row=0, column=column+1, sticky="ns", padx=1, pady=1)
             self.twiss_t.append(label)
         
@@ -316,20 +307,6 @@ class ImpactMainWindow(tk.Tk):
                 current_row.append(t)
             self.string_twiss.append(current_row)
 
-            
-        '''Sigma Entry'''   
-        self.entry_sigma = []
-        for row in range(3):
-            current_row = []
-            for column in range(3):
-                label = tk.Entry(self.frame_Twiss, 
-                                 textvariable=self.string_sigma[row][column], 
-                                 borderwidth=0,
-                                 width=twisswidth)
-                label.grid(row=row+1, column=column+1, sticky="ns", padx=2, pady=1)
-                current_row.append(label)
-            self.entry_sigma.append(current_row)
-        
         '''Twiss Entry'''   
         self.entry_twiss = []
         for row in range(3):
@@ -338,7 +315,7 @@ class ImpactMainWindow(tk.Tk):
                 label = tk.Entry(self.frame_Twiss, 
                                  textvariable=self.string_twiss[row][column], 
                                  borderwidth=0,
-                                 width=twisswidth)
+                                 width=twisswidth[column])
                 label.grid(row=row+1, column=column+1, sticky="ns", padx=2, pady=1)
                 current_row.append(label)
             self.entry_twiss.append(current_row)
@@ -495,7 +472,7 @@ class ImpactMainWindow(tk.Tk):
         self.button_initial["command"]     = lambda: self.thread_it(self.preprocessing)
         self.button_initial.pack(fill = 'both',expand =1,side = 'left')
         
-        self.button_initial.bind("<Enter>", lambda event, h=self.button_initial: h.configure(bg="green"))
+        self.button_initial.bind("<Enter>", lambda event, h=self.button_initial: h.configure(bg="#00CD00"))#green
         self.button_initial.bind("<Leave>", lambda event, h=self.button_initial: h.configure(bg="#FFFFFF"))
         
         self.button_run = tk.Button(self.frame_control)
@@ -505,7 +482,7 @@ class ImpactMainWindow(tk.Tk):
         self.button_run.pack(fill = 'both',expand =1,side = 'left')
         self.run_lock = threading.RLock()
         
-        self.button_run.bind("<Enter>", lambda event, h=self.button_run: h.configure(bg="green"))
+        self.button_run.bind("<Enter>", lambda event, h=self.button_run: h.configure(bg="#00CD00"))#green
         self.button_run.bind("<Leave>", lambda event, h=self.button_run: h.configure(bg="#FFFFFF"))
         
         self.button_plot = tk.Button(self.frame_control)
@@ -514,12 +491,9 @@ class ImpactMainWindow(tk.Tk):
         self.button_plot["command"]     = lambda: self.makeAdvancedPlot()
         self.button_plot.pack(fill = 'both',expand =1,side = 'left')
         
-        self.button_plot.bind("<Enter>", lambda event, h=self.button_plot: h.configure(bg="green"))
+        self.button_plot.bind("<Enter>", lambda event, h=self.button_plot: h.configure(bg="#00CD00"))#green
         self.button_plot.bind("<Leave>", lambda event, h=self.button_plot: h.configure(bg="#FFFFFF"))
         
-
-        
-
         
         '''
         self.test = tk.Button(self.frame_left)
@@ -617,9 +591,10 @@ class ImpactMainWindow(tk.Tk):
                 re[0],re[1],re[2] = ConvertFunc.Sigma2Twiss(s1,s2,s3, f,m,k)
             if i==2:
                 re[0],re[1],re[2] = ConvertFunc.Sigma2TwissZ(s1,s2,s3, f,m,k)    
+            digits = [2,4,4]
             for j in range(3):
-                if not math.isclose(re[j], float(self.string_twiss[i][j].get()),rel_tol=1e-06):
-                    self.string_twiss[i][j].set(str(re[j]))
+                #if not math.isclose(re[j], float(self.string_twiss[i][j].get()),rel_tol=1e-06):
+                    self.string_twiss[i][j].set('{:.{}e}'.format(re[j], digits[j]))
         except:
             #print('Error')
             pass
@@ -636,12 +611,13 @@ class ImpactMainWindow(tk.Tk):
             if i==1 or i==0:
                 re[0],re[1],re[2] = ConvertFunc.Twiss2Sigma(s1,s2,s3, f,m,k)
             if i==2:
-                re[0],re[1],re[2] = ConvertFunc.Twiss2SigmaZ(s1,s2,s3, f,m,k)    
+                re[0],re[1],re[2] = ConvertFunc.Twiss2SigmaZ(s1,s2,s3, f,m,k)
+            digits = [4,4,4]
             for j in range(3):
-                if not math.isclose(re[j], float(self.string_sigma[i][j].get()),rel_tol=1e-06):
-                    self.string_sigma[i][j].set(str(re[j]))
-                else:
-                    pass
+                #if not math.isclose(re[j], float(self.string_sigma[i][j].get()),rel_tol=1e-06):
+                self.string_sigma[i][j].set('{:.{}e}'.format(re[j], digits[j]))
+                #else:
+                #    pass
         except:
             #print('Error')
             pass
@@ -1321,7 +1297,7 @@ class startWindow(tk.Toplevel):
                                         command = lambda: self.startImpactT(master))
         self.button_ImpactT.pack(fill = 'both',expand =1,side = 'left')
         
-        self.button_ImpactT.bind("<Enter>", lambda event, h=self.button_ImpactT: h.configure(bg="yellow"))
+        self.button_ImpactT.bind("<Enter>", lambda event, h=self.button_ImpactT: h.configure(bg="#00CD00"))
         self.button_ImpactT.bind("<Leave>", lambda event, h=self.button_ImpactT: h.configure(bg="#FFFFFF"))
 
         
@@ -1329,14 +1305,14 @@ class startWindow(tk.Toplevel):
                                         command = lambda: self.startImpactZ(master))
         self.button_ImpactZ.pack(fill = 'both',expand =1,side = 'left')
         
-        self.button_ImpactZ.bind("<Enter>", lambda event, h=self.button_ImpactZ: h.configure(bg="yellow"))
+        self.button_ImpactZ.bind("<Enter>", lambda event, h=self.button_ImpactZ: h.configure(bg="#00CD00"))
         self.button_ImpactZ.bind("<Leave>", lambda event, h=self.button_ImpactZ: h.configure(bg="#FFFFFF"))
         
         self.button_close = tk.Button(self,text='QUIT',font = LARGE_FONT,
                                         command = lambda: master.quit())
         self.button_close.pack(fill = 'both',expand =0,side = 'bottom')
         
-        self.button_close.bind("<Enter>", lambda event, h=self.button_close: h.configure(bg="yellow"))
+        self.button_close.bind("<Enter>", lambda event, h=self.button_close: h.configure(bg="#00CD00"))
         self.button_close.bind("<Leave>", lambda event, h=self.button_close: h.configure(bg="#FFFFFF"))
         
 

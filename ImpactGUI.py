@@ -9,9 +9,10 @@ else:
     eval('import ImpactMainWindow')
     ImpactMainWindow = eval('reload(ImpactMainWindow)') 
 
-root = ImpactMainWindow.ImpactMainWindow()  
+root = ImpactMainWindow.ImpactMainWindow()
 ImpactMainWindow.MyMenu(root)
 
+root.update()
 w  = root.winfo_width()
 h  = root.winfo_height()
 ws = root.winfo_screenwidth() # width of the screen
@@ -20,7 +21,7 @@ x = (ws/2) - (w/2)
 y = (hs/2) - (h/2)
 
 root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-root.resizable(width=1, height=1)
+root.resizable(width=True, height=True)
 #root.protocol("WM_DELETE_WINDOW", quitConfirm)
 
 
