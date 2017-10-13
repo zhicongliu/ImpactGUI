@@ -183,6 +183,9 @@ class ImpactMainWindow(tk.Tk):
         self.button_dic["command"]     = lambda: self.changeDic()
         self.button_dic.pack(side = 'left')
         
+        self.button_dic.bind("<Enter>", lambda event, h=self.button_dic: h.configure(bg="#00CD00"))
+        self.button_dic.bind("<Leave>", lambda event, h=self.button_dic: h.configure(bg="#FFFFFF"))
+        
         """Frame2: Time step"""
         self.frame1 = tk.Frame(self.frame_left, 
                                height =_height/2, width = _width)
@@ -423,7 +426,7 @@ class ImpactMainWindow(tk.Tk):
         LARGE_FONT= ("Helvetica", 10)
         self.button_AdvancedControl["font"]        = LARGE_FONT
         
-        self.button_AdvancedControl.bind("<Enter>", lambda event, h=self.button_AdvancedControl: h.configure(bg="yellow"))
+        self.button_AdvancedControl.bind("<Enter>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#00CD00"))
         self.button_AdvancedControl.bind("<Leave>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#FFFFFF"))
         """Lattice"""
         self.frame_input3 = tk.LabelFrame(self.frame_left, 
@@ -479,6 +482,7 @@ class ImpactMainWindow(tk.Tk):
         self.button_run["text"]         = "Run"
         self.button_run["font"]         = LARGE_FONT
         self.button_run["command"]      = lambda: self.thread_it(self.startImpact)
+        #self.button_run["command"]      = lambda: self.startImpact()
         self.button_run.pack(fill = 'both',expand =1,side = 'left')
         self.run_lock = threading.RLock()
         
@@ -733,6 +737,7 @@ class ImpactMainWindow(tk.Tk):
         self.button_run['state']='normal'
         
     def startImpact(self):
+        print("Start " + self.AccKernel)
         if self.AccKernel=='ImpactT':
             try:
                 os.chdir(self.entry_dic.get())
@@ -760,13 +765,13 @@ class ImpactMainWindow(tk.Tk):
                 return
             np = self.save('test.in')
             
-            ImpactExe = os.path.join(sys.path[0],'src',_IMPACT_T_NAME)
+            ImpactExe = os.path.join(sys.path[0],'src',_IMPACT_Z_NAME)
     
             if np==1:
                 cmd = ImpactExe
             elif np>1:
                 cmd = _MPINAME+' -n '+str(np)+' '+ImpactExe
-            
+            print(cmd)
             p=subprocess.Popen(cmd,stdout=subprocess.PIPE,bufsize=1)
             for line in iter(p.stdout.readline,b''):
                 print(('>>{}'.format(line.rstrip())))
@@ -1250,7 +1255,7 @@ class PlotControlFrame(tk.Frame):
     def makePlot(self):
         print((self.plotType))
         
-        PlotFileName='fort.'+str(self.plotDirct.get()+24)        
+        PlotFileName='fort.'+str(self.plotDirct.get()+24)
         yx=ImpactMainWindow.PLOTTYPE[self.plotType.get()]
         yl=yx if self.plotDirct.get()!=2 else yx-1
 
@@ -1408,8 +1413,7 @@ def resource_path(relative_path):
 def quitConfirm():
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         root.destroy()
- 
- 
+
 '''
             pyinsteller -F -add-data "icon\ImpactT.gif;icon" ImpactGUI.py
 '''

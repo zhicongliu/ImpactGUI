@@ -333,6 +333,7 @@ class PlotFrame(tk.Frame):
             fin = open(PlotFileName,'r')
         except:
             print(( "  ERRPR! Can't open file '" + PlotFileName + "'"))
+            return
         
         linesList  = fin.readlines()
         fin .close()
@@ -964,7 +965,6 @@ class ParticleDensityFrame_weight2D(ParticleBaseFrame):
         if flag=='ContourPlot':
             x = np.linspace(xMin, xMax, nx)
             y = np.linspace(yMin, yMax, ny)
-            #count = scipy.ndimage.zoom(count, 3)
             self.msh = self.subfig.contourf(x, y, count,level=12,interpolation='gaussian',cmap =tmap , vmin=0.0001)
         else:
             self.msh = self.subfig.imshow(count, origin = "lower", interpolation='bilinear', 
