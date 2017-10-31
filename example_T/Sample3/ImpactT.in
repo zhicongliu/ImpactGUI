@@ -2,7 +2,7 @@
 !If you meet any bug, please contact zhicongliu@lbl.gov
 
 1 1 0
-2.5e-13 1000000 1
+2.5e-13 100 1
 6 1000 1 0 2 1 0.02
 32 32 32 1 0.002 0.002 5.0
 3 0 0 100 1.2e-11
