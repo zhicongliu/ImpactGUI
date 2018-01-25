@@ -74,6 +74,13 @@ class AdvancedSetFrame(tk.Toplevel):
         self.entry_dt1.grid(row=rowtemp,column=1,sticky='E')
         rowtemp+=1
         
+        """Dimension"""
+        self.label_dist    = tk.Label(self.frame1, text="Distribution")
+        self.entry_dist    = tk.Entry(self.frame1,textvariable=master.distTypeNumb)
+        self.label_dist.grid(row=rowtemp,sticky='W')
+        self.entry_dist.grid(row=rowtemp,column=1,sticky='E')
+        rowtemp+=1
+        
         '''Type of integrator
         self.label_integrator       = tk.Label(self.frame1, text="Integrator")
         self.box_integrator         = ttk.Combobox(self.frame1,textvariable=master.Flagmap,

@@ -40,7 +40,7 @@ PARTICLE_TYPE       = {'Electron'   :'510998.9461 -1.0',
 DISTRIBUTION_TYPE = {'Uniform'   :'1',
                      'Gauss'     :'2',
                      'WaterBag'  :'3',
-                     'SemiGuass' :'4',
+                     'SemiGauss' :'4',
                      'KV'        :'5',
                      'Read'      :'16',
                      'Read Parmela'   :'24',
@@ -50,7 +50,7 @@ DISTRIBUTION_TYPE = {'Uniform'   :'1',
 DISTRIBUTION_Z_TYPE = {'Uniform'   :'1',
                      'Gauss'     :'2',
                      'WaterBag'  :'3',
-                     'SemiGuass' :'4',
+                     'SemiGauss' :'4',
                      'KV'        :'5',
                      'Read'      :'19',
                      'Multi-charge-state WaterBag'   :'16',
@@ -332,11 +332,12 @@ class ImpactMainWindow(tk.Tk):
         self.label_dist.grid(row=0, column=0,
                              sticky="nw", padx=1, pady=1)
         self.distTypeComx = tk.StringVar(self.frame_Dist,'WaterBag')
+        self.distTypeNumb = tk.StringVar(self.frame_Dist,'3')
         self.distType = ttk.Combobox(self.frame_Dist,text=self.distTypeComx,
                                      values=['Uniform', 'Gauss', 'SemiGauss',
                                              'WaterBag','KV', 'Read',
                                              'Read Parmela', 'Read Elegant',
-                                             'CylcoldZSob'])
+                                             'CylcoldZSob','Other'])
         self.distType.grid(row=0, column=1,
                              sticky="nsew", padx=1, pady=1)
         
@@ -525,7 +526,12 @@ class ImpactMainWindow(tk.Tk):
         self.ptcMass.trace('w', self.updatePtcType)
         self.ptcCharge.trace('w', self.updatePtcType)
         
+        self.updateDistTypeLock  =0
+        self.distTypeComx.trace('w', self.updateDist)
+        self.distTypeNumb.trace('w', self.updateDistType)
+
         
+
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
@@ -547,6 +553,21 @@ class ImpactMainWindow(tk.Tk):
         self.entry_dic.insert(0, filename)
         print(filename)
     
+        
+    def updatePtc(self,*args):
+        if self.updatePtcTypeLock ==1:
+            return
+        self.updatePtcTypeLock = 1
+        
+        if self.ptcTypeComx.get() !='Other':
+            try:
+                ptc = PARTICLE_TYPE[self.ptcTypeComx.get()].split()
+                self.ptcMass.set(ptc[0])
+                self.ptcCharge.set(ptc[1])
+            except:
+                pass
+        self.updatePtcTypeLock = 0
+    
     def updatePtcType(self,*args):
         if self.updatePtcTypeLock ==1:
             return
@@ -567,20 +588,55 @@ class ImpactMainWindow(tk.Tk):
         if ptcFound==0:
             self.ptcTypeComx.set('Other')
         self.updatePtcTypeLock = 0
-        
-    def updatePtc(self,*args):
-        if self.updatePtcTypeLock ==1:
+
+    def updateDist(self,*args):
+        if self.updateDistTypeLock ==1:
             return
-        self.updatePtcTypeLock = 1
+        self.updateDistTypeLock = 1
         
-        if self.ptcTypeComx.get() !='Other':
+        if self.distTypeComx.get() != 'Other':
             try:
-                ptc = PARTICLE_TYPE[self.ptcTypeComx.get()].split()
-                self.ptcMass.set(ptc[0])
-                self.ptcCharge.set(ptc[1])
+                if self.AccKernel=='ImpactT':
+                    dist = DISTRIBUTION_TYPE[self.distTypeComx.get()]
+                    self.distTypeNumb.set(dist)
+                elif self.AccKernel=='ImpactZ':
+                    dist = DISTRIBUTION_Z_TYPE[self.distTypeComx.get()]
+                    self.distTypeNumb.set(dist)
+                else:
+                    print("Kernel type ERROR!")
+                    sys.exit()
             except:
                 pass
-        self.updatePtcTypeLock = 0
+        self.updateDistTypeLock = 0
+        
+    def updateDistType(self,*args):
+        if len(self.distTypeNumb.get())==0:
+            return
+        if self.updateDistTypeLock ==1:
+            return
+        self.updateDistTypeLock = 1
+        
+        invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
+        if self.AccKernel=='ImpactT':
+            invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
+        elif self.AccKernel=='ImpactZ':
+            invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_Z_TYPE.items()))
+        else:
+            print("Kernel type ERROR!")
+            sys.exit()
+        print(len(self.distTypeNumb.get()))
+        distFound = 0
+        for key in invermap.keys():
+            try:
+                if key == self.distTypeNumb.get():
+                    self.distTypeComx.set(invermap[key])
+                    distFound = 1
+                    break
+            except:
+                pass
+        if distFound==0:
+            self.distTypeComx.set('Other')
+        self.updateDistTypeLock = 0
         
     def updateTwiss(self,i):
         if self.updateTwissLock ==1:
@@ -672,13 +728,14 @@ class ImpactMainWindow(tk.Tk):
         self.entry_Nstep.config(state='disabled')
         self.entry_dt.config(state='disabled')
         
-        distT=['Uniform', 'Gauss', 'SemiGauss',
+        distZ=['Uniform', 'Gauss', 'SemiGauss',
                'WaterBag','KV', 'Read',
                'Multi-charge-state WaterBag',
-               'Multi-charge-state Gaussian']
-        if self.distTypeComx.get() not in distT:
-            self.distTypeComx.set(distT[0])
-        self.distType['values'] =distT
+               'Multi-charge-state Gaussian',
+               'Other']
+        if self.distTypeComx.get() not in distZ:
+            self.distTypeComx.set(distZ[0])
+        self.distType['values'] =distZ
         self.lattice.titleZ()
         
     def switchToImpactT(self):
@@ -698,7 +755,7 @@ class ImpactMainWindow(tk.Tk):
         distT =['Uniform', 'Gauss', 'SemiGauss',
                 'WaterBag','KV', 'Read',
                 'Read Parmela', 'Read Elegant',
-                'CylcoldZSob']
+                'CylcoldZSob','Other']
         if self.distTypeComx.get() not in distT:
             self.distTypeComx.set(distT[0])
         self.distType['values'] =distT
@@ -835,12 +892,18 @@ class ImpactMainWindow(tk.Tk):
                           +str(float(   self.Xrad.get()))+' '
                           +str(float(   self.Yrad.get()))+' '
                           +str(float(   self.Zrad.get()))+'\n')
-        
-        ImpactInput.write(DISTRIBUTION_TYPE[self.distType.get()]    +' '+
-                          str(int(float(self.FlagRestart.get())))   +' '+
-                          '0 '+    #Flagsbstp
-                          str(int(float(self.Nemission.get())))     +' '+
-                          str(float(self.Temission.get()))          +'\n')
+        if self.distTypeComx.get() == 'Other':
+            ImpactInput.write(self.distTypeNumb.get()    +' '+
+                  str(int(float(self.FlagRestart.get())))   +' '+
+                  '0 '+    #Flagsbstp
+                  str(int(float(self.Nemission.get())))     +' '+
+                  str(float(self.Temission.get()))          +'\n')
+        else:
+            ImpactInput.write(DISTRIBUTION_TYPE[self.distTypeComx.get()]    +' '+
+                              str(int(float(self.FlagRestart.get())))   +' '+
+                              '0 '+    #Flagsbstp
+                              str(int(float(self.Nemission.get())))     +' '+
+                              str(float(self.Temission.get()))          +'\n')
 
         for row in range(3):
             for column in range(7):
@@ -899,10 +962,17 @@ class ImpactMainWindow(tk.Tk):
                           +str(float(   self.Yrad.get()))+' '
                           +str(float(   self.ZperiodSize.get()))+'\n')
         
-        ImpactInput.write(DISTRIBUTION_Z_TYPE[self.distType.get()]    +' '+
+        if self.distType.get() == 'Other':
+            ImpactInput.write(self.distTypeNumb.get()    +' '+
                           str(int(float(self.FlagRestart.get())))   +' '+
                           str(int(float(self.FlagSubcycle.get())))  +' '+
                           str(int(float(self.Nbunch.get())))  +'\n')
+        else:
+            ImpactInput.write(DISTRIBUTION_Z_TYPE[self.distType.get()]    +' '+
+                          str(int(float(self.FlagRestart.get())))   +' '+
+                          str(int(float(self.FlagSubcycle.get())))  +' '+
+                          str(int(float(self.Nbunch.get())))  +'\n')
+
         
         ImpactInput.write(self.NpList.get()+ '\n')
         ImpactInput.write(self.CurrentList.get()+ '\n')
@@ -1039,10 +1109,15 @@ class ImpactMainWindow(tk.Tk):
         '''Distribution'''
         invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
         try:
-            self.distTypeComx.set(invermap[linesList[4][0]])
+            if linesList[4][0] in invermap.keys():
+                self.distTypeComx.set(invermap[linesList[4][0]])
+            else:
+                self.distTypeComx.set('Other')
+                self.distTypeNumb.set(linesList[4][0])
         except:
             self.distTypeComx.set(invermap['3'])
             print('Cannot recognize distribution type, Set as waterbag')
+
         self.FlagRestart.set(0 if int(linesList[4][1])==0 else 1)
         self.Nemission.set(linesList[4][3])
         self.Temission.set(linesList[4][4])
@@ -1140,7 +1215,17 @@ class ImpactMainWindow(tk.Tk):
         
         '''Distribution'''
         invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_Z_TYPE.items()))
-        self.distTypeComx.set(invermap[linesList[rowtemp][0]])
+        
+        try:
+            if linesList[rowtemp][0] in invermap.keys():
+                self.distTypeComx.set(invermap[linesList[rowtemp][0]])
+            else:
+                self.distTypeComx.set('Other')
+                self.distTypeNumb.set(linesList[rowtemp][0])
+        except:
+            self.distTypeComx.set(invermap['3'])
+            print('Cannot recognize distribution type, Set as waterbag')
+
         self.FlagRestart.set( 0 if int(linesList[rowtemp][1])==0 else 1)
         self.FlagSubcycle.set(0 if int(linesList[rowtemp][2])==0 else 1)
         self.Nbunch.set(linesList[rowtemp][3])
