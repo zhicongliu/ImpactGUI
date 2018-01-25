@@ -19,16 +19,20 @@ import ParticlePlot
 _height=300
 _width =200
 
-ADVANCED_PLOT_TYPE= {'Centriod location (m)'    :2,
-                     'Rms size (m)'             :3,
-                     'Centriod momentum (MC)'   :4,
-                     'Rms momentum (MC)'        :5,
-                     'Twiss'                    :6,
-                     'Emittance (m-rad)'        :7}
+IMPACT_T_ADVANCED_PLOT_TYPE= {'Centriod location (mm)'    :2,
+                     'Rms size (mm)'             :3,
+                     'Centriod momentum (MC)'    :4,
+                     'Rms momentum (MC)'         :5,
+                     'Twiss'                     :6,
+                     'Emittance (mm-mrad)'       :7}
+
+IMPACT_T_SciFormatter = FormatStrFormatter('%2.1E')
+IMPACT_T_sciMaxLimit  = 99999 *2
+IMPACT_T_sciMinLimit  = 0.0001*2
 
 class AdvancedPlotControlFrame(tk.Toplevel):
     """Output"""
-            
+    
     def __init__(self, master=None, cnf={}, **kw):
         tk.Toplevel.__init__(self, master, cnf, **kw)
         self.title('ImpactT Plot')
@@ -52,10 +56,10 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                            text="Z", value=2)
         self.frame_radio.z.pack(side='left')
         
-        self.plotTypeComx = tk.StringVar(self.frame_plotButton,'Rms size (m)')
+        self.plotTypeComx = tk.StringVar(self.frame_plotButton,'Rms size (mm)')
         self.plotType = ttk.Combobox(self.frame_plotButton,text=self.plotTypeComx,
                                      width = 20,
-                                     values=list(ADVANCED_PLOT_TYPE.keys()))
+                                     values=list(IMPACT_T_ADVANCED_PLOT_TYPE.keys()))
         self.plotType.pack(side = 'top')
         self.plot = tk.Button(self.frame_plotButton,text='plot',command=self.makePlot)
         self.plot.pack(fill = 'both',expand =1,side = 'top',padx=10)
@@ -80,7 +84,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                                 command = lambda: self.energyPlot(3,'Kinetic Energy (MeV)'))
         self.button_Ek              .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
-        
+        '''
         self.button_beta            = tk.Button(self.frame2,text='Beta',
                                                 command = lambda: self.energyPlot(4,'Beta'))
         self.button_beta            .grid(row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
@@ -88,9 +92,9 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                                 command = lambda: self.energyPlot(2,'Gamma'))
         self.button_gamma           .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
-        
+        '''
         self.button_rmax            = tk.Button(self.frame2,text='Rmax',
-                                                command = lambda: self.energyPlot(5,'Rmax (m)'))
+                                                command = lambda: self.energyPlot(5,'Rmax (mm)'))
         self.button_rmax            .grid(row = rowN, column=0, pady=5 ,padx=5, sticky="nswe")
         self.button_dw              = tk.Button(self.frame2,text='Rms delta E',
                                                 command = lambda: self.energyPlot(6,'Rms delta E (MC^2)'))
@@ -249,7 +253,7 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         print(self.__class__.__name__)
         
         PlotFileName='fort.'+str(self.plotDirct.get()+24)        
-        yx=ADVANCED_PLOT_TYPE[self.plotType.get()]
+        yx=IMPACT_T_ADVANCED_PLOT_TYPE[self.plotType.get()]
         yl=yx if self.plotDirct.get()!=2 else yx-1
 
         plotWindow = tk.Toplevel(self)
@@ -338,8 +342,13 @@ class PlotFrame(tk.Frame):
         linesList  = fin.readlines()
         fin .close()
         linesList  = [line.split() for line in linesList ]
-        x   = [float(xrt[xl]) for xrt in linesList]
-        y   = [float(xrt[yl]) for xrt in linesList]
+        x   = np.array([float(xrt[xl]) for xrt in linesList])
+        y   = np.array([float(xrt[yl]) for xrt in linesList])
+        
+        if labelY in ['Centriod location (mm)','Rms size (mm)','Rmax (mm)']:
+            y = y*1.0e3       # unit convert from m to mm
+        elif labelY in ['Emittance (mm-mrad)']:
+            y = y*1.0e6       # unit convert from (m-rad) to (mm-mrad)
         
         fig = Figure(figsize=(7,5), dpi=100)
         subfig = fig.add_subplot(111)
@@ -347,8 +356,17 @@ class PlotFrame(tk.Frame):
         subfig.set_xlabel('Z (m)')
         subfig.set_ylabel(labelY)
 
-        xmajorFormatter = FormatStrFormatter('%2.2E')
-        subfig.yaxis.set_major_formatter(xmajorFormatter)
+        xMax = np.max(x)
+        xMin = np.min(x)
+        yMax = np.max(y)
+        yMin = np.min(y)
+        if (xMax-xMin)>IMPACT_T_sciMaxLimit or (xMax-xMin)<IMPACT_T_sciMinLimit:
+            self.subfig.xaxis.set_major_formatter(IMPACT_T_SciFormatter)
+        if (yMax-yMin)>IMPACT_T_sciMaxLimit or (yMax-yMin)<IMPACT_T_sciMinLimit:
+            self.subfig.yaxis.set_major_formatter(IMPACT_T_SciFormatter)
+        
+        #xmajorFormatter = FormatStrFormatter('%2.2E')
+        #subfig.yaxis.set_major_formatter(xmajorFormatter)
         box = subfig.get_position()
         subfig.set_position([box.x0*1.45, box.y0*1.1, box.width, box.height])
         
@@ -398,28 +416,28 @@ class OverallFrame(tk.Frame):
         labelList[0]    = ['rms.X','max.X']
         xdataList[0]    = [xl,xl]
         ydataList[0]    = [4,3]
-        xyLabelList[0]  = ['z drection (m)','beam size in X (m)']
+        xyLabelList[0]  = ['z drection (m)','beam size in X (mm)']
         
         saveName.append('sizeY')
         fileList[1]     = ['fort.25','fort.27']
         labelList[1]    = ['rms.Y','max.Y']
         xdataList[1]    = [xl,xl]
         ydataList[1]    = [4,5]
-        xyLabelList[1]  = ['z drection (m)','beam size in Y (m)']
+        xyLabelList[1]  = ['z drection (m)','beam size in Y (mm)']
         
         saveName.append('sizeZ')
         fileList[2]     = ['fort.26','fort.27']
         labelList[2]    = ['rms.Z','max.Z']
         xdataList[2]    = [xl,xl]
         ydataList[2]    = [3,7]
-        xyLabelList[2]  = ['z drection (m)','beam size in Z (m)']
+        xyLabelList[2]  = ['z drection (m)','beam size in Z (mm)']
         
         saveName.append('emitXY')
         fileList[3]     = ['fort.24','fort.25']
         labelList[3]    = ['emit.nor.X','emit.nor.Y']
         xdataList[3]    = [xl,xl]
         ydataList[3]    = [8,8]
-        xyLabelList[3]  = ['z drection (m)','emittance at X and Y (m*rad)']
+        xyLabelList[3]  = ['z drection (m)','emittance at X and Y (mm*mrad)']
         
         lineType = ['r-','b--']
 
@@ -435,15 +453,29 @@ class OverallFrame(tk.Frame):
                 linesList  = [line.split() for line in linesList ]
                 xId = xdataList[i][j]-1
                 yId = ydataList[i][j]-1
-                x   = [xrt[xId] for xrt in linesList]
-                y   = [xrt[yId] for xrt in linesList]
+                x   = np.array([float(xrt[xId]) for xrt in linesList])
+                y   = np.array([float(xrt[yId]) for xrt in linesList])
+                if i in range(0,picNum-1):
+                    y=y*1.0e3
+                elif i == picNum-1:
+                    y=y*1.0e6
                 self.subfig[i].plot(x, y, lineType[j], linewidth=2, label=labelList[i][j])
+                
+                
             self.subfig[i].set_xlabel(xyLabelList[i][0])
             self.subfig[i].set_ylabel(xyLabelList[i][1])
             box = self.subfig[i].get_position()
             self.subfig[i].set_position([box.x0*1.1, box.y0*1.1, box.width, box.height *0.88])
-            xmajorFormatter = FormatStrFormatter('%2.2E')
-            self.subfig[i].yaxis.set_major_formatter(xmajorFormatter)  
+            
+            xMax = np.max(x)
+            xMin = np.min(x)
+            yMax = np.max(y)
+            yMin = np.min(y)
+            if (xMax-xMin)>IMPACT_T_sciMaxLimit or (xMax-xMin)<IMPACT_T_sciMinLimit:
+                self.subfig[i].xaxis.set_major_formatter(IMPACT_T_SciFormatter)
+            if (yMax-yMin)>IMPACT_T_sciMaxLimit or (yMax-yMin)<IMPACT_T_sciMinLimit:
+                self.subfig[i].yaxis.set_major_formatter(IMPACT_T_SciFormatter)
+                
             self.subfig[i].legend(loc='upper center', bbox_to_anchor=(0.5, 1.21),fancybox=True, shadow=True, ncol=5)
         self.canvas.draw()
         
@@ -538,11 +570,11 @@ class TemperatureFrame(PlotBaseFrame):
         self.canvas.draw()
 
 class PlotHighOrderBaseFrame(tk.Frame):
-    ParticleDirec = {'X (m)'    :2,
+    ParticleDirec = {'X (mm)'    :2,
                      'Px (MC)'   :3,
-                     'Y (m)'    :4,
+                     'Y (mm)'    :4,
                      'Py (MC)'   :5,
-                     'Z (m)'    :6,
+                     'Z (mm)'    :6,
                      'Pz (MC)'   :7}
     data = np.array([])
     def __init__(self, parent, PlotFileName):
@@ -554,25 +586,28 @@ class PlotHighOrderBaseFrame(tk.Frame):
             return
         
         self.data = np.transpose(self.data)
+        for i in range(0,6,2):
+            self.data[i] = self.data[i] * 1e3  # from m to mm
+        
         self.frame_PlotParticleControl = tk.Frame(self)
         self.frame_PlotParticleControl.pack()
         
         self.label_x    = tk.Label(self.frame_PlotParticleControl, text="Direction:")
         self.label_x.pack(side='left')
 
-        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X (m)')
+        self.ppc1Value  = tk.StringVar(self.frame_PlotParticleControl,'X (mm)')
         self.ppc1       = ttk.Combobox(self.frame_PlotParticleControl,text=self.ppc1Value,
                                        width=6,
-                                       values=['X (m)', 'Px (MC)', 'Y (m)', 'Py (MC)','Z (m)','Pz (MC)'])
+                                       values=['X (mm)', 'Px (MC)', 'Y (mm)', 'Py (MC)','Z (mm)','Pz (MC)'])
         self.ppc1.pack(fill = 'both',expand =1,side = 'left')
         
         LARGE_FONT= ("Verdana", 12)
         self.button_ppc=tk.Button(self.frame_PlotParticleControl)
-        self.button_ppc["text"] = "Plot"
-        self.button_ppc["foreground"] = "blue"
-        self.button_ppc["bg"] = "red"
-        self.button_ppc["font"] = LARGE_FONT
-        self.button_ppc["command"] = self.plot
+        self.button_ppc["text"]         = "Plot"
+        self.button_ppc["foreground"]   = "blue"
+        self.button_ppc["bg"]           = "red"
+        self.button_ppc["font"]         = LARGE_FONT
+        self.button_ppc["command"]      = self.plot
         self.button_ppc.pack(fill = 'both',expand =1,side = 'left')
 
         x   = 1
@@ -605,10 +640,9 @@ class PlotMaxFrame(PlotHighOrderBaseFrame):
         y   = self.ParticleDirec[self.ppc1.get()]
         
         self.subfig.cla()
-        self.subfig.plot(self.data[0],self.data[y])
+        self.subfig.plot(self.data[1],self.data[y])
         
-        xmajorFormatter = FormatStrFormatter('%2.2E')
-        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        axis_format_T(self.data[1],self.data[y], self.subfig)
 
         self.subfig.set_xlabel('Z (m)')
         if y%2==0:
@@ -625,7 +659,7 @@ class Plot3orderFrame(PlotHighOrderBaseFrame):
         y   = self.ParticleDirec[self.ppc1.get()]
         
         self.subfig.cla()
-        self.subfig.plot(self.data[0],self.data[y])
+        self.subfig.plot(self.data[1],self.data[y])
         
         xmajorFormatter = FormatStrFormatter('%2.2E')
         self.subfig.yaxis.set_major_formatter(xmajorFormatter)
@@ -645,10 +679,10 @@ class Plot4orderFrame(PlotHighOrderBaseFrame):
         y   = self.ParticleDirec[self.ppc1.get()]
         
         self.subfig.cla()
-        self.subfig.plot(self.data[0],self.data[y])
+        self.subfig.plot(self.data[1],self.data[y])
         
-        xmajorFormatter = FormatStrFormatter('%2.2E')
-        self.subfig.yaxis.set_major_formatter(xmajorFormatter)
+        #xmajorFormatter = FormatStrFormatter('%2.2E')
+        #self.subfig.yaxis.set_major_formatter(xmajorFormatter)
 
         self.subfig.set_xlabel('Z (m)')
         if y%2==0:
@@ -656,3 +690,13 @@ class Plot4orderFrame(PlotHighOrderBaseFrame):
         else:
             self.subfig.set_ylabel('square square root of 4th '+ self.ppc1.get())
         self.canvas.draw()
+        
+def axis_format_T(xData,yData,subfig):
+    xMax = np.max(xData)
+    xMin = np.min(xData)
+    yMax = np.max(yData)
+    yMin = np.min(yData)
+    if (xMax-xMin)>IMPACT_T_sciMaxLimit or (xMax-xMin)<IMPACT_T_sciMinLimit:
+        subfig.xaxis.set_major_formatter(IMPACT_T_SciFormatter)
+    if (yMax-yMin)>IMPACT_T_sciMaxLimit or (yMax-yMin)<IMPACT_T_sciMinLimit:
+        subfig.yaxis.set_major_formatter(IMPACT_T_SciFormatter)

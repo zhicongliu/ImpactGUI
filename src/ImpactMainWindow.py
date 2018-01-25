@@ -43,8 +43,8 @@ DISTRIBUTION_TYPE = {'Uniform'   :'1',
                      'SemiGauss' :'4',
                      'KV'        :'5',
                      'Read'      :'16',
-                     'Read Parmela'   :'24',
-                     'Read Elegant'   :'25',
+##                     'Read Parmela'   :'24',
+##                     'Read Elegant'   :'25',
                      'CylcoldZSob'    :'27'}
 
 DISTRIBUTION_Z_TYPE = {'Uniform'   :'1',
@@ -336,7 +336,6 @@ class ImpactMainWindow(tk.Tk):
         self.distType = ttk.Combobox(self.frame_Dist,text=self.distTypeComx,
                                      values=['Uniform', 'Gauss', 'SemiGauss',
                                              'WaterBag','KV', 'Read',
-                                             'Read Parmela', 'Read Elegant',
                                              'CylcoldZSob','Other'])
         self.distType.grid(row=0, column=1,
                              sticky="nsew", padx=1, pady=1)
@@ -754,11 +753,10 @@ class ImpactMainWindow(tk.Tk):
         self.Flagmap.set('Linear')
         distT =['Uniform', 'Gauss', 'SemiGauss',
                 'WaterBag','KV', 'Read',
-                'Read Parmela', 'Read Elegant',
                 'CylcoldZSob','Other']
-        if self.distTypeComx.get() not in distT:
-            self.distTypeComx.set(distT[0])
         self.distType['values'] =distT
+        if self.distTypeComx.get() not in distT:
+            self.distTypeComx.set('Other')
         self.lattice.titleT()
     def makeAdvancedSet(self):
         try:
