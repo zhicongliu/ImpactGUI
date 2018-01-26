@@ -37,7 +37,7 @@ PARTICLE_TYPE       = {'Electron'   :'510998.9461 -1.0',
                        'Antiproton' :'938272081.3 -1.0',
                        'Other'      :'Other_NONE'}
 
-DISTRIBUTION_TYPE = {'Uniform'   :'1',
+DISTRIBUTION_T_TYPE = {'Uniform'   :'1',
                      'Gauss'     :'2',
                      'WaterBag'  :'3',
                      'SemiGauss' :'4',
@@ -596,7 +596,7 @@ class ImpactMainWindow(tk.Tk):
         if self.distTypeComx.get() != 'Other':
             try:
                 if self.AccKernel=='ImpactT':
-                    dist = DISTRIBUTION_TYPE[self.distTypeComx.get()]
+                    dist = DISTRIBUTION_T_TYPE[self.distTypeComx.get()]
                     self.distTypeNumb.set(dist)
                 elif self.AccKernel=='ImpactZ':
                     dist = DISTRIBUTION_Z_TYPE[self.distTypeComx.get()]
@@ -615,15 +615,15 @@ class ImpactMainWindow(tk.Tk):
             return
         self.updateDistTypeLock = 1
         
-        invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
+        invermap = {'':''}
         if self.AccKernel=='ImpactT':
-            invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
+            invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_T_TYPE.items()))
         elif self.AccKernel=='ImpactZ':
             invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_Z_TYPE.items()))
         else:
             print("Kernel type ERROR!")
             sys.exit()
-        print(len(self.distTypeNumb.get()))
+
         distFound = 0
         for key in invermap.keys():
             try:
@@ -897,7 +897,7 @@ class ImpactMainWindow(tk.Tk):
                   str(int(float(self.Nemission.get())))     +' '+
                   str(float(self.Temission.get()))          +'\n')
         else:
-            ImpactInput.write(DISTRIBUTION_TYPE[self.distTypeComx.get()]    +' '+
+            ImpactInput.write(DISTRIBUTION_T_TYPE[self.distTypeComx.get()]    +' '+
                               str(int(float(self.FlagRestart.get())))   +' '+
                               '0 '+    #Flagsbstp
                               str(int(float(self.Nemission.get())))     +' '+
@@ -1105,7 +1105,7 @@ class ImpactMainWindow(tk.Tk):
         self.Zrad.set(linesList[3][6])
         
         '''Distribution'''
-        invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_TYPE.items()))
+        invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_T_TYPE.items()))
         try:
             if linesList[4][0] in invermap.keys():
                 self.distTypeComx.set(invermap[linesList[4][0]])

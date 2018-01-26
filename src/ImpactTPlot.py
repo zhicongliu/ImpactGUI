@@ -15,7 +15,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib as plt
 
-import ParticlePlot
+import ParticlePlot, SlicePlot
 _height=300
 _width =200
 
@@ -144,6 +144,15 @@ class AdvancedPlotControlFrame(tk.Toplevel):
                                                     command = self.ParticleDensityPlot2)
         self.button_ParticleDensity2    .grid(row = rowN, column=1, pady=5 ,padx=5, sticky="nswe")
         rowN+=1
+        
+        self.t = ttk.Separator(self.frame2, orient=tk.HORIZONTAL).grid(column=0, row = rowN, columnspan=2,sticky="we")        
+        rowN+=1
+        
+        self.button_SlicePlot     = tk.Button(self.frame2,text='Slice plot',
+                                                    command = self.SlicePlot)
+        self.button_SlicePlot     .grid( row = rowN, column=0, columnspan=2, pady=5 ,padx=5, sticky="nswe")
+
+        rowN+=1
 
 
 
@@ -247,6 +256,20 @@ class AdvancedPlotControlFrame(tk.Toplevel):
         plotWindow.title('Plot')
         
         l=ParticlePlot.ParticleDensityFrame2D_slow(plotWindow,fileName,1.0,'ImpactT')
+        l.pack()
+        
+    def SlicePlot(self):
+        fileName=filedialog.askopenfilename(parent=self)
+        try:
+            t=open(fileName)
+            t.close()
+        except:
+            return
+        
+        plotWindow = tk.Toplevel(self)
+        plotWindow.title('Slice Plot')
+        
+        l=SlicePlot.SliceBaseFrame(plotWindow,fileName)
         l.pack()
         
     def makePlot(self):

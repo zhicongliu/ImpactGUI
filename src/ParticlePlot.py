@@ -120,11 +120,11 @@ class ParticleBaseFrame(tk.Frame):
         
         LARGE_FONT= ("Verdana", 12)
         self.button_ppc=tk.Button(self.frame_PlotParticleControl)
-        self.button_ppc["text"] = "Plot"
-        self.button_ppc["foreground"] = "red"
-        self.button_ppc["bg"] = "yellow"
-        self.button_ppc["font"] = LARGE_FONT
-        self.button_ppc["command"] = self.plot
+        self.button_ppc["text"]         = "Plot"
+        self.button_ppc["foreground"]   = "#FF0000"
+        self.button_ppc["bg"]           = "#FFFF00"
+        self.button_ppc["font"]         = LARGE_FONT
+        self.button_ppc["command"]      = self.plot
         self.button_ppc.pack(fill = 'both',expand =1,side = 'right')
         
         self.ppc1Value.trace('w',lambda a,b,c,direc='X': self.update(direc))
