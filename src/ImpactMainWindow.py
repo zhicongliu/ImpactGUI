@@ -5,6 +5,7 @@
 
 import os, sys, threading, subprocess
 import math
+from shutil import copyfile
 
 if sys.version_info[0] < 3:
     print("Error: need python version 3.x!")
@@ -852,6 +853,8 @@ class ImpactMainWindow(tk.Tk):
             
 
     def save(self,fileName):
+        if os.path.isfile(fileName) == True and os.path.isfile(fileName+'.old') == False:
+            copyfile(fileName,fileName+'.old')
         if self.AccKernel=='ImpactT':
             return self.saveImpactT(fileName)
         elif self.AccKernel=='ImpactZ':

@@ -172,7 +172,7 @@ class AdvancedSetFrame(tk.Toplevel):
         self.frame_Twiss = tk.LabelFrame(self, height =_height/10, width = _width,
                                           text="Initial Distribution")
         self.frame_Twiss.pack(side = 'top')
-        twisswidth = 9
+        twisswidth = 10
 
         self.twiss_s = []
         self.twiss_chara = ["sigma(m)","sigmaP","muxpx",'xScale','PxSacle','x shift','px shift']
