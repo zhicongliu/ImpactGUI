@@ -2,14 +2,11 @@
 import os,  re, sys,  pdb, math, fileinput
 from glob import glob
 from shutil import copyfile
-# Note: 1) some parameters (shown below) need to be modified for each run
-#       2) two lines os.system('aprun -n 1 ./ImpactTexe > a') might need
-#          to be modified 
-#       3) python's index start from 0
 #
 #--- (c) Copyright, 2014 by the Regents of the University of California.
-#Authors: T. Wilson and J. Qiang.
-#Description: PhaseOpt.py beta v. 1.1: 
+#This PreProcessing.py is based on the PhaseOpt.py beta v. 1.1: 
+#Authors: Zhicong Liu, T. Wilson,  and J. Qiang.
+#Description: 
 #             Find the RF driven phase used in the ImpactT.in given the
 #             design phase initially specified in the ImpactT.in.
 #             The initial ImpactT.in is copied into file ImpactT_backup.in.
@@ -22,16 +19,14 @@ from shutil import copyfile
 # starting and ending row location of lattice in ImpactT.in
 
 
-# row location of restart switch  in the ImpactT.in
+# row location of restart switch in the ImpactT.in
 row_restart = 7
 #------------------------------------------------------
 _IMPACT_T_NAME ='ImpactTv1.8b.exe'
-_IMPACT_Z_NAME ='ImpactZv17.exe'
 # phase angle scan specifications
 angle_in = 0
 angle_end = 360
 delv = 20
-
 #
 # column indices to read input file ImpactT.in
 # 3: bpm; 7: ang
@@ -49,10 +44,8 @@ tol = 0.0001
 # max number of iterations in Brent's Method before quitting
 it_max = 20
 
-#-----------------------------------------------------
-
     
-def main():
+def process(parent):
     # remove previous data files
     files = glob(os.path.join('.' + "/ang_*"))
     files += glob(os.path.join('.' + "/eng_*"))
@@ -62,11 +55,10 @@ def main():
     
     # create backup of ImpactT.in
     copyfile('ImpactT.in','ImpactT_backup.in')
-
+    
     # from row_start to row_end, optimize beam elements one at a time
     row_start = 14
-    ft= open('ImpactT.in').readlines()
-    row_end = len(ft)-1
+    row_end = len(open('ImpactT.in').readlines())
 
     # default values for variables
     zedge = -1
@@ -75,14 +67,30 @@ def main():
     length = -1
     freq = -1
     prediction = -1
+    
+    global angle_in
+    global angle_end
+    global delv
+    global col_el
+    global col_freq
+    global col_ang
+    global tol
+    global it_max
+    angle_in = 0
+    angle_end = 360
+    delv = 20
+    col_el = 3
+    col_freq = 6
+    col_ang = 7
+    tol = 0.0001
+    it_max = 20
+
 
     # global values from initial parameter specification
     # Angle_in and angle_end will be global variables to store the start and end points of the initial scan.
     # However, for later scans, they are changed if we can make a good prediction of the angle
     # (if beta is close enough to 1). When this happens, to not lose the initial values angle_in and angle_end,
     # we store them in angle_inVal and angle_endVal.
-    global angle_in
-    global angle_end
     angle_inVal     = angle_in
     angle_endVal    = angle_end
 
@@ -90,7 +98,6 @@ def main():
     # row_start and row_end are acceptable here because the -3 and -99 lines are added and removed WITHIN each
     # iteration of the loop.
     for i in range(row_start, row_end):
-
         # set angle_in and angle_end back to default values stored in angle_inVal and angle_endVal
         # This is reset for every row, just in case our prediction is bad (cannot find a max within +/- 20 degrees
         # of the prediction), so we are forced to scan the entire default range to find a max. 
@@ -101,25 +108,22 @@ def main():
         file = open('ImpactT.in', 'r')
         lines = file.readlines()
         file.close()
+        
+        print(lines[i].split(),col_el,col_freq)
 
-        # if not a commented line
-        if lines[i][0] != '!':
-         
-         # if bpm > 100 and rf field != 0
-         print(lines[i].split(),col_el,col_freq)
-         if int(lines[i].split()[col_el]) > 100 and float((lines[i].split()[col_freq]).replace('d','E')) !=  0:
+
+        # if bpm > 100 and rf field != 0
+        if int(lines[i].split()[col_el]) > 100 and float((lines[i].split()[col_freq]).replace('d','E')) !=  0:
 
             # read in the user specified angle relative to zero phase and frequency
             spec_ang = (lines[i].split())[col_ang]
             prev_freq = freq
             freq = float(lines[i].split()[col_freq].replace('d','E'))
 
-            print(('finding max for beam element in line '+str(i)+'...'))
-
+            print('finding max for beam element in line '+str(i)+'...')
 
             # insert -99 and -3 line after line i
-
-            # 'x' is the empty  that will be the  version of ImpactT.in. We insert -3 and -99 lines
+            # 'x' is the empty  that will be the version of ImpactT.in. We insert -3 and -99 lines
             # after line i.
             x = ''
             # makes sure that we only insert one set of -3 and -99 lines (this could have happened if we have
@@ -127,28 +131,31 @@ def main():
             inserted = False
 
             for line in fileinput.input('ImpactT.in'):
-               if line == lines[i] and inserted == False:
-                  # makes sure that we only insert one set of -3 and -99 lines
-                  # more than one can be inserted if we have duplicate beam elements
-                  inserted = True
+                if line == lines[i] and inserted == False:
+                    # makes sure that we only insert one set of -3 and -99 lines
+                    # more than one can be inserted if we have duplicate beam elements
+                    inserted = True
+                    
+                    # set position parameters for -3 and -99 line
+                    length_str = (lines[i].split())[0]
+                    prev_length = length
+                    length = float(length_str.replace('d','E'))
+                    
+                    zedge_str = lines[i].split()[4]
+                    prev_zedge = zedge
+                    zedge = float(zedge_str.replace('d','E'))
+                    
+                    cav_end = zedge + length
+                    # create -3 and -99 lines
+                    tmp3line = '0 0 80 -3 '+str(cav_end)+' '+str(cav_end)+' '+str(cav_end)+' / \n'
+                    tmp99line = '0 0 0 -99 '+str(cav_end)+' '+str(cav_end)+' '+str(cav_end)+' / \n'
+                    x = x+line
+                    x = x+tmp3line+tmp99line
+                    
+                    print(zedge,length,cav_end)
 
-                  # set position parameters for -3 and -99 line
-                  length_str = (lines[i].split())[0]
-                  prev_length = length
-                  # convert scientific notation from fortran 'd' to python 'E'
-                  length = float(length_str.replace('d','E'))
-                  zedge_str = lines[i].split()[4]
-                  prev_zedge = zedge
-                  zedge = float(zedge_str.replace('d','E'))
-                  cav_end = zedge + length
-                  # create -3 and -99 lines
-                  tmp3line = '0 0 80 -3 '+str(cav_end)+' '+str(cav_end)+' '+str(cav_end)+' / \n'
-                  tmp99line = '0 0 0 -99 '+str(cav_end)+' '+str(cav_end)+' '+str(cav_end)+' / \n'
-                  x = x+line
-                  x = x+tmp3line+tmp99line
-
-               else:
-                  x = x+line
+                else:
+                    x = x+line
 
 
             # overwrite ImpactT.in with -3 and -99 lines
@@ -191,7 +198,8 @@ def main():
             # return energy of specified angle (this makes the last line in 'engout_spec' have the data we want)
             # this keeps 'engout''s last line as still being for the max energy
             # run ImpactT simulation and output eng data to a file
-            os.system(_IMPACT_T_NAME+' > a')
+            ImpactExe = os.path.join(sys.path[0],'src',_IMPACT_T_NAME)
+            os.system(ImpactExe+' > a')
             #os.system('tail -1 fort.18 >> tmpeng')
             tailAppend('fort.18','tmpeng')
 
@@ -260,8 +268,6 @@ def main():
     file.writelines(lines)
     file.close()
 
-#------------------------------------------------------
-
 # returns the number of lines in a file
 def fileLength(filename):
    with open(filename) as f:
@@ -270,8 +276,6 @@ def fileLength(filename):
          pass
    return i + 1
 
-#------------------------------------------------------
-
 # confines angles to a range of 0-360 degrees; not necessary but makes things cleaner
 def angMod(angle):
    while angle > 360:
@@ -279,8 +283,6 @@ def angMod(angle):
    while angle < 0:
       angle += 360
    return angle
-
-#-----------------------------------------------------
 
 def predict(zedge, prev_zedge, max_ang, prev_freq, prev_length):
 
@@ -306,11 +308,12 @@ def predict(zedge, prev_zedge, max_ang, prev_freq, prev_length):
    file = open('fort.18_max', 'r')
    lines18 = file.readlines()
    file.close
-
+   #t1=0.0
+   #t2=0.0
    for ind in range(len(lines18)):
-
       # Check to see if the position of the beam in fort.18_max in a certain line is within 0.01
       # of the position of the leading edge of the previous cavity.
+      print(float((lines18[ind].split())[1]),prev_zedge)
       if math.fabs(float((lines18[ind].split())[1]) - prev_zedge) < 0.01:
          # Save this difference; it will be useful for comparison, since we want the time value
          # for a position as close as we can get to the leading edge of the previous cavity
@@ -331,8 +334,12 @@ def predict(zedge, prev_zedge, max_ang, prev_freq, prev_length):
             t2 = float(lines18[ind].split()[0])
    
    # delt is the time elapsed between the beam entering and exiting the previous cavity
-   print(t1,t2)
-   delt = t2 - t1
+   print(float((lines18[ind].split())[1]),prev_zedge,prev_length)
+   try:
+       delt = t2 - t1
+   except:
+       print("check code!!Especially the space!!!")
+       sys.exit()
 
    # Find out how fast the beam was traveling at the end of the previous cavity
    file = open('engout', 'r')
@@ -366,8 +373,6 @@ def predict(zedge, prev_zedge, max_ang, prev_freq, prev_length):
 
    else:
       return -1
-
-#------------------------------------------------------
 
 def findMax(row, cav_end, prediction):
    # set default values to -1
@@ -425,8 +430,6 @@ def findMax(row, cav_end, prediction):
    global_max = brents(bracket_low, ang_max, bracket_high, eng_low, eng_max, eng_high, tol, it_max, row, cav_end)
    return global_max
 
-#-----------------------------------------------------------
-
 # Objective function; returns the energy for a specified phase angle
 def returnEng(ang, row, cav_end):
 
@@ -445,10 +448,10 @@ def returnEng(ang, row, cav_end):
    file.close()
    # if RstartFlag = 1 (if this isn't the first beam element)
    if int(lines[row_restart].split()[1]) == 1:
-      copyfile('temp_fort.80',' fort.80')
+      copyfile('temp_fort.80','fort.80')
 
    # outputs ang data to a file
-   os.system(' echo '+str(ang)+' >> ang_data_'+str(row))
+   os.system('echo '+str(ang)+' >> ang_data_'+str(row))
 
    # open ImpactT.in and change phase angle
    file = open('ImpactT.in','r')
@@ -463,13 +466,14 @@ def returnEng(ang, row, cav_end):
    file.close()
 
    # run ImpactT simulation and output eng data to a file
-   os.system(_IMPACT_T_NAME+' > a')
+   ImpactExe = os.path.join(sys.path[0],'src',_IMPACT_T_NAME)
+   os.system(ImpactExe+' > a')
 
    # The following line is included so that we can easily access a fort.18 file that contains the data for the
    # maximum energy. This will be useful when we make our predictions for the optimal angle of the next beam element.
    # We need to create fort.18_max because if the user specifies a non-zero angle from the zero phase, the latest fort.18
    # file will be for that angle, and not the max energy.
-  
+
    copyfile('fort.18','fort.18_max')
    
    #os.system('tail -1 fort.18 >> tmpeng')
@@ -499,8 +503,6 @@ def returnEng(ang, row, cav_end):
 
    return float(eng)
    
-#------------------------------------------------------
-
 # Brent's method of parabolic interpolation finds maximum given a bracketed triplet
 def brents(ax, bx, cx, fa, fb, fc, tol, it_max, row, cav_end):
     
@@ -662,7 +664,6 @@ def brents(ax, bx, cx, fa, fb, fc, tol, it_max, row, cav_end):
 
     return xmax
 
-#-----------------------------------------------------------
 def purge(dir, pattern):
     for f in os.listdir(dir):
         if re.search(pattern, f):

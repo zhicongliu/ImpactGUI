@@ -12,8 +12,8 @@ import numpy as np
 class SliceBaseFrame(tk.Frame):
     SlicePlotDirec={'Number of macroparticle per cell':             1,
                     'Current':                                      2,
-                    'X slice emmittance(m-rad)':                    3,
-                    'Y slice emmittance(m-rad)':                    4,
+                    'X slice emmittance (m-rad)':                   3,
+                    'Y slice emmittance (m-rad)':                   4,
                     'Energy spread per cell - Correlated (eV)':     5,
                     'Energy spread per cell - Uncorrelated (eV)':   6}
     
@@ -39,11 +39,11 @@ class SliceBaseFrame(tk.Frame):
         self.label_y.pack(side='left')
         self.ppc2Value  = tk.StringVar(self.frame_PlotControl,'Current')
         self.ppc2       = ttk.Combobox(self.frame_PlotControl,text=self.ppc2Value,
-                                       width=35,
+                                       width=40,
                                        values=['Number of macroparticle per cell',
                                                'Current',
-                                               'X slice emmittance(m-rad)',
-                                               'Y slice emmittance(m-rad)',
+                                               'X slice emittance (m-rad)',
+                                               'Y slice emittance (m-rad)',
                                                'Energy spread per cell - Correlated (eV)',
                                                'Energy spread per cell - Uncorrelated (eV)'])
         self.ppc2.pack(fill = 'both',expand =1,side = 'left')

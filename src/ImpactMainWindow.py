@@ -15,6 +15,7 @@ from tkinter import messagebox,filedialog,ttk
 
 import numpy as np
 
+import ImpactFile
 import PreProcessing
 import ConvertFunc
 import LatticeFrame
@@ -693,14 +694,15 @@ class ImpactMainWindow(tk.Tk):
             self.button_run     .config(state='disable')
             self.button_plot    .config(state='disable')
             self.button_initial .config(state='disable')
-            PreProcessing.main()
+            PreProcessing.process(self)
             self.load('ImpactT.in')
             self.button_run     .config(state='normal')
             self.button_plot    .config(state='normal')
             self.button_initial .config(state='normal')
         elif self.AccKernel=='ImpactZ':
-            np = self.save('test.in')
             print('PreProcessing cannot use at Z code')
+            sys.exit()
+            #np = self.save('test.in')
             #PreProcessing.main('Z')
         else:
             print('Cannot find kernel: '+self.AccKernel)
@@ -1000,43 +1002,7 @@ class ImpactMainWindow(tk.Tk):
         ImpactInput.close()
         return np
     
-    def DtoE(self,word):
-        if 'D' in word or 'd' in word: 
-            try:
-                temp = float(word.replace('D','E',1).replace('d','e',1))
-                return str(temp)
-            except:
-                return word
-        else:
-            return word
-        
-    def readInput(self,inputFileName):
-        try:
-            fin = open(inputFileName,'r')
-            linesList  = fin.readlines()
-            fin.close()
-        except:
-            print(( "  ERROR! Can't open file '" + inputFileName + "'"))
-            return False
 
-        i=0
-        while i < len(linesList):
-            if linesList[i].lstrip()=='' or linesList[i].lstrip().startswith('!'):
-                del linesList[i]
-                i=i-1
-            else:
-                index = linesList[i].lstrip().find('!')
-                if index==-1:
-                    linesList[i]=linesList[i].strip()+'\n'
-                else:
-                    linesList[i]=linesList[i].lstrip()[:index].rstrip()+'\n'
-            i=i+1
-        linesList  = [line.split() for line in linesList ]
-        
-        for i in range(0,len(linesList)):
-            for j in range(0,len(linesList[i])):
-                linesList[i][j] = self.DtoE(linesList[i][j])
-        return linesList
         
     def load(self,inputFileName):
         
@@ -1053,77 +1019,78 @@ class ImpactMainWindow(tk.Tk):
         self.entry_dic.insert(0,path)
 
     def loadImpactT(self,inputFileName):
-        linesList = self.readInput(inputFileName)
-        if linesList ==False:
+        dataList = ImpactFile.conciseReadInput(inputFileName)
+
+        if dataList ==False:
             return
         '''CPU'''
         self.entry_noc1.delete(0,tk.END)
-        self.entry_noc1.insert(0, linesList[0][0])
+        self.entry_noc1.insert(0, dataList[0][0])
         self.entry_noc2.delete(0,tk.END)
-        self.entry_noc2.insert(0, linesList[0][1])
+        self.entry_noc2.insert(0, dataList[0][1])
         try:
-            self.GPUflag.set(0 if int(linesList[0][2])==0 else 1)
+            self.GPUflag.set(0 if int(dataList[0][2])==0 else 1)
         except:
             self.GPUflag.set(0)
         '''TimeStep'''
         self.entry_dt.delete(0,tk.END)
-        self.entry_dt.insert(0, linesList[1][0])
+        self.entry_dt.insert(0, dataList[1][0])
         self.entry_Nstep.delete(0,tk.END)
-        self.entry_Nstep.insert(0, linesList[1][1])
-        self.Nbunch.set(linesList[1][2])
+        self.entry_Nstep.insert(0, dataList[1][1])
+        self.Nbunch.set(dataList[1][2])
               
         '''Particle'''
 
-        self.Dim.set(linesList[2][0])
+        self.Dim.set(dataList[2][0])
         self.entry_Np.delete(0,tk.END)
-        self.entry_Np.insert(0, linesList[2][1])
+        self.entry_Np.insert(0, dataList[2][1])
 
         #self.Flagmap.set(1)
-        self.Flagerr.set(0 if int(linesList[2][3])==0 else 1)
+        self.Flagerr.set(0 if int(dataList[2][3])==0 else 1)
         
         invermap = dict(map(lambda t:(t[1],t[0]), DIAGNOSTIC_TYPE.items()))
-        if linesList[2][4] not in ['1','2','3']:
-            linesList[2][4] = '3'
-        self.Flagdiag.set(invermap[linesList[2][4]])
+        if dataList[2][4] not in ['1','2','3']:
+            dataList[2][4] = '3'
+        self.Flagdiag.set(invermap[dataList[2][4]])
         
-        self.Flagimag.set(0 if int(linesList[2][5])==0 else 1)
-        self.Zimage.set(linesList[2][6])
+        self.Flagimag.set(0 if int(dataList[2][5])==0 else 1)
+        self.Zimage.set(dataList[2][6])
         
         '''Grid'''
         self.entry_Ngx.delete(0,tk.END)
-        self.entry_Ngx.insert(0, linesList[3][0])
+        self.entry_Ngx.insert(0, dataList[3][0])
         self.entry_Ngy.delete(0,tk.END)
-        self.entry_Ngy.insert(0, linesList[3][1])
+        self.entry_Ngy.insert(0, dataList[3][1])
         self.entry_Ngz.delete(0,tk.END)
-        self.entry_Ngz.insert(0, linesList[3][2])
+        self.entry_Ngz.insert(0, dataList[3][2])
         
         invermap = dict(map(lambda t:(t[1],t[0]), BOUNDARY_TYPE.items()))
-        self.Flagbc.set(invermap[linesList[3][3]])
+        self.Flagbc.set(invermap[dataList[3][3]])
         
-        self.Xrad.set(linesList[3][4])
-        self.Yrad.set(linesList[3][5])
-        self.Zrad.set(linesList[3][6])
+        self.Xrad.set(dataList[3][4])
+        self.Yrad.set(dataList[3][5])
+        self.Zrad.set(dataList[3][6])
         
         '''Distribution'''
         invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_T_TYPE.items()))
         try:
-            if linesList[4][0] in invermap.keys():
-                self.distTypeComx.set(invermap[linesList[4][0]])
+            if dataList[4][0] in invermap.keys():
+                self.distTypeComx.set(invermap[dataList[4][0]])
             else:
                 self.distTypeComx.set('Other')
-                self.distTypeNumb.set(linesList[4][0])
+                self.distTypeNumb.set(dataList[4][0])
         except:
             self.distTypeComx.set(invermap['3'])
             print('Cannot recognize distribution type, Set as waterbag')
 
-        self.FlagRestart.set(0 if int(linesList[4][1])==0 else 1)
-        self.Nemission.set(linesList[4][3])
-        self.Temission.set(linesList[4][4])
+        self.FlagRestart.set(0 if int(dataList[4][1])==0 else 1)
+        self.Nemission.set(dataList[4][3])
+        self.Temission.set(dataList[4][4])
 
         '''Twiss'''
         for row in range(3):
             for column in range(7):
-                self.string_sigma[row][column].set(linesList[5+row][column])
+                self.string_sigma[row][column].set(dataList[5+row][column])
         
         '''Particle Type'''
         invermap = dict(map(lambda t:(t[1],t[0]), PARTICLE_TYPE.items()))
@@ -1131,8 +1098,8 @@ class ImpactMainWindow(tk.Tk):
         for key in invermap.keys():
             ptc = key.split()
             try:
-                if math.isclose(float(ptc[0]), float(linesList[8][2]),rel_tol=1e-3):
-                    if math.isclose(float(ptc[1]), float(linesList[8][3]),rel_tol=1e-3):
+                if math.isclose(float(ptc[0]), float(dataList[8][2]),rel_tol=1e-3):
+                    if math.isclose(float(ptc[1]), float(dataList[8][3]),rel_tol=1e-3):
                         self.ptcTypeComx.set(invermap[key])
                         ptcFound = 1
                         break
@@ -1140,107 +1107,108 @@ class ImpactMainWindow(tk.Tk):
                 pass
         if ptcFound==0:
             self.ptcTypeComx.set('Other')
-        self.ptcMass    .set(linesList[8][2])
-        self.ptcCharge  .set(linesList[8][3])
+        self.ptcMass    .set(dataList[8][2])
+        self.ptcCharge  .set(dataList[8][3])
          
         """Current"""
         self.entry_cur.delete(0, tk.END)
-        self.entry_cur.insert(0, linesList[8][0])
+        self.entry_cur.insert(0, dataList[8][0])
         
         """Energy"""
         self.entry_Ek.delete(0, tk.END)
-        self.entry_Ek.insert(0, linesList[8][1])
+        self.entry_Ek.insert(0, dataList[8][1])
         
         """Frequency"""
         self.entry_frq.delete(0, tk.END)
-        self.entry_frq.insert(0, linesList[8][4])
+        self.entry_frq.insert(0, dataList[8][4])
         
-        self.Tinitial.set(linesList[8][5]) 
+        self.Tinitial.set(dataList[8][5]) 
         
         """Lattice"""
         self.lattice.latticeTextHide.delete(0.0, tk.END)
-        for lineSet in linesList[9:]:
+        for lineSet in dataList[9:]:
             for word in lineSet:
                 self.lattice.latticeTextHide.insert(tk.END, word + ' ')
             self.lattice.latticeTextHide.insert(tk.END,'\n')
         self.lattice.update()
         
     def loadImpactZ(self,inputFileName):
-        linesList = self.readInput(inputFileName)
-        if linesList ==False:
+        dataList = ImpactFile.conciseReadInput(inputFileName)
+        
+        if dataList ==False:
             return
         rowtemp=0
         '''CPU'''
         self.entry_noc1.delete(0,tk.END)
-        self.entry_noc1.insert(0, linesList[rowtemp][0])
+        self.entry_noc1.insert(0, dataList[rowtemp][0])
         self.entry_noc2.delete(0,tk.END)
-        self.entry_noc2.insert(0, linesList[rowtemp][1])
+        self.entry_noc2.insert(0, dataList[rowtemp][1])
         try:
-            self.GPUflag.set(0 if int(linesList[rowtemp][2])==0 else 1)
+            self.GPUflag.set(0 if int(dataList[rowtemp][2])==0 else 1)
         except:
             self.GPUflag.set(0)
         rowtemp+=1
               
         '''Particle'''
-        self.Dim.set(linesList[rowtemp][0])
+        self.Dim.set(dataList[rowtemp][0])
         self.entry_Np.delete(0,tk.END)
-        self.entry_Np.insert(0, linesList[rowtemp][1])
+        self.entry_Np.insert(0, dataList[rowtemp][1])
 
         invermap = dict(map(lambda t:(t[1],t[0]), INTEGRATOR_TYPE.items()))
-        self.Flagmap.set(invermap[linesList[rowtemp][2]])
+        self.Flagmap.set(invermap[dataList[rowtemp][2]])
         
-        self.Flagerr.set(0 if int(linesList[rowtemp][3])==0 else 1)
+        self.Flagerr.set(0 if int(dataList[rowtemp][3])==0 else 1)
         
         invermap = dict(map(lambda t:(t[1],t[0]), OUTPUT_Z_TYPE.items()))
-        self.Flagdiag.set(invermap[linesList[rowtemp][4]])
+        self.Flagdiag.set(invermap[dataList[rowtemp][4]])
         rowtemp+=1
         
         '''Grid'''
         self.entry_Ngx.delete(0,tk.END)
-        self.entry_Ngx.insert(0, linesList[rowtemp][0])
+        self.entry_Ngx.insert(0, dataList[rowtemp][0])
         self.entry_Ngy.delete(0,tk.END)
-        self.entry_Ngy.insert(0, linesList[rowtemp][1])
+        self.entry_Ngy.insert(0, dataList[rowtemp][1])
         self.entry_Ngz.delete(0,tk.END)
-        self.entry_Ngz.insert(0, linesList[rowtemp][2])
+        self.entry_Ngz.insert(0, dataList[rowtemp][2])
         
         invermap = dict(map(lambda t:(t[1],t[0]), BOUNDARY_TYPE.items()))
-        self.Flagbc.set(invermap[linesList[rowtemp][3]])
+        self.Flagbc.set(invermap[dataList[rowtemp][3]])
         
-        self.Xrad.set(str(float(linesList[rowtemp][4])))
-        self.Yrad.set(str(float(linesList[rowtemp][5])))
-        self.ZperiodSize.set(str(float(linesList[rowtemp][6])))
+        self.Xrad.set(str(float(dataList[rowtemp][4])))
+        self.Yrad.set(str(float(dataList[rowtemp][5])))
+        self.ZperiodSize.set(str(float(dataList[rowtemp][6])))
         rowtemp+=1
         
         '''Distribution'''
         invermap = dict(map(lambda t:(t[1],t[0]), DISTRIBUTION_Z_TYPE.items()))
         
         try:
-            if linesList[rowtemp][0] in invermap.keys():
-                self.distTypeComx.set(invermap[linesList[rowtemp][0]])
+            if dataList[rowtemp][0] in invermap.keys():
+                self.distTypeComx.set(invermap[dataList[rowtemp][0]])
             else:
                 self.distTypeComx.set('Other')
-                self.distTypeNumb.set(linesList[rowtemp][0])
+                self.distTypeNumb.set(dataList[rowtemp][0])
         except:
             self.distTypeComx.set(invermap['3'])
             print('Cannot recognize distribution type, Set as waterbag')
 
-        self.FlagRestart.set( 0 if int(linesList[rowtemp][1])==0 else 1)
-        self.FlagSubcycle.set(0 if int(linesList[rowtemp][2])==0 else 1)
-        self.Nbunch.set(linesList[rowtemp][3])
+        self.FlagRestart.set( 0 if int(dataList[rowtemp][1])==0 else 1)
+        self.FlagSubcycle.set(0 if int(dataList[rowtemp][2])==0 else 1)
+        self.Nbunch.set(dataList[rowtemp][3])
         rowtemp+=1
         
         '''Multiple Charge State'''
-        self.NpList.set(' '.join(linesList[rowtemp])) 
+        self.NpList.set(' '.join(dataList[rowtemp])) 
         rowtemp+=1
-        self.CurrentList.set(' '.join(linesList[rowtemp])) 
+        self.CurrentList.set(' '.join(dataList[rowtemp])) 
         rowtemp+=1
-        self.SchargeList.set(' '.join(linesList[rowtemp])) 
+        self.SchargeList.set(' '.join(dataList[rowtemp])) 
         rowtemp+=1
         
         '''Twiss'''
         for row in range(3):
             for column in range(7):
-                self.string_sigma[row][column].set(linesList[rowtemp][column])
+                self.string_sigma[row][column].set(dataList[rowtemp][column])
             rowtemp+=1
 
         '''Particle Type'''
@@ -1251,8 +1219,8 @@ class ImpactMainWindow(tk.Tk):
         for key in invermap.keys():
             ptc = key.split()
             try:
-                if math.isclose(float(ptc[0]), float(linesList[rowtemp][2]),rel_tol=1e-3):
-                    if math.isclose(float(ptc[1]), float(linesList[rowtemp][3]),rel_tol=1e-3):
+                if math.isclose(float(ptc[0]), float(dataList[rowtemp][2]),rel_tol=1e-3):
+                    if math.isclose(float(ptc[1]), float(dataList[rowtemp][3]),rel_tol=1e-3):
                         self.ptcTypeComx.set(invermap[key])
                         ptcFound = 1
                         break
@@ -1261,28 +1229,28 @@ class ImpactMainWindow(tk.Tk):
         if ptcFound==0:
             self.ptcTypeComx.set('Other')
         
-        self.ptcMass    .set(linesList[rowtemp][2])
-        self.ptcCharge  .set(linesList[rowtemp][3])
-        #print(rowtemp,linesList[rowtemp])
+        self.ptcMass    .set(dataList[rowtemp][2])
+        self.ptcCharge  .set(dataList[rowtemp][3])
+        #print(rowtemp,dataList[rowtemp])
             
         """Current"""
         self.entry_cur.delete(0, tk.END)
-        self.entry_cur.insert(0, linesList[rowtemp][0])
+        self.entry_cur.insert(0, dataList[rowtemp][0])
         
         """Energy"""
         self.entry_Ek.delete(0, tk.END)
-        self.entry_Ek.insert(0, linesList[rowtemp][1])
+        self.entry_Ek.insert(0, dataList[rowtemp][1])
         
         """Frequency"""
         self.entry_frq.delete(0, tk.END)
-        self.entry_frq.insert(0, linesList[rowtemp][4])
+        self.entry_frq.insert(0, dataList[rowtemp][4])
         
-        self.Tinitial.set(linesList[rowtemp][5]) 
+        self.Tinitial.set(dataList[rowtemp][5]) 
         
         rowtemp+=1
         """Lattice"""
         self.lattice.latticeTextHide.delete(0.0, tk.END)
-        for lineSet in linesList[rowtemp:]:
+        for lineSet in dataList[rowtemp:]:
             for word in lineSet:
                 self.lattice.latticeTextHide.insert(tk.END, word + ' ')
             self.lattice.latticeTextHide.insert(tk.END,'\n')
