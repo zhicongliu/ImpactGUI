@@ -696,5 +696,3 @@ def pasteL(src1,src2,dest):
     f1.close()
     f2.close()
     fdest.close()
-    
-#main()
