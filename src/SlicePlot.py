@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import ttk,filedialog
 
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 import time,os,sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter 
-import matplotlib.pyplot as plt
 
 import numpy as np
 

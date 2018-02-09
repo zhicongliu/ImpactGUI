@@ -5,13 +5,17 @@
 #Output: figures about beam size and emittance
 # plots are saved at '/post'
 
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 import tkinter as tk
 from tkinter import ttk,filedialog
 import time,os,sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter 
-import matplotlib.pyplot as plt
+
 #import scipy.ndimage
 from scipy.stats import gaussian_kde
 import numpy as np

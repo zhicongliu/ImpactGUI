@@ -1,12 +1,18 @@
-import tkinter as tk
-from tkinter import ttk,filedialog
-
 import time,os,sys
+
+
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter 
-import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 from scipy.stats import gaussian_kde
+
+
+import tkinter as tk
+from tkinter import ttk,filedialog
 
 import numpy as np
 
