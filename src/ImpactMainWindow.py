@@ -6,7 +6,6 @@
 import os, sys, threading, subprocess
 import math
 from shutil import copyfile
-from sqlalchemy.sql.expression import except_
 
 if sys.version_info[0] < 3:
     print("Error: need python version 3.x!")
