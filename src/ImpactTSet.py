@@ -4,7 +4,9 @@ Created on Jun 29, 2017
 '''
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog,ttk
+import os,sys
+
 _height=200
 _width =200
 class AdvancedSetFrame(tk.Toplevel):            
@@ -17,6 +19,36 @@ class AdvancedSetFrame(tk.Toplevel):
         self.frame1 = tk.LabelFrame(self, height =_height/10, width = _width,
                                           text="Configuration")
         self.frame1.pack(side = 'top')
+        
+        """Exe path"""
+        self.frame_exe = tk.LabelFrame(self.frame1)
+        self.frame_exe.grid(row=rowtemp,column=0,rowspan=2,columnspan=2,sticky='w')
+        rowtemp+=2
+        
+        self.frame_input1 = tk.Frame(self.frame_exe)
+        self.frame_input1.grid(row=0,column=0,columnspan=2,sticky='w')
+        
+        self.label_exePat    = tk.Label(self.frame_input1, text="mpirun:")
+        self.label_exePat.pack(side='left')
+        self.entry_exePath = tk.Entry(self.frame_input1, width=45,textvariable=master.MPI_EXE)
+        self.entry_exePath.pack(side='left')
+        
+        self.frame_input = tk.Frame(self.frame_exe,borderwidth=0, highlightthickness=0)
+        self.frame_input.grid(row=1,column=0,columnspan=2,sticky='w')
+        
+        self.label_exePat    = tk.Label(self.frame_input, text="Exe:")
+        self.label_exePat.pack(side='left')
+        self.entry_exePath = tk.Entry(self.frame_input, width=45,textvariable=master.IMPACT_T_EXE)
+        self.entry_exePath.pack(side='left')
+        
+        self.button_exePath = tk.Button(self.frame_input)
+        self.button_exePath["text"]        = "..."
+        self.button_exePath["command"]     = lambda: self.changeExe(master.IMPACT_T_EXE)
+        self.button_exePath.pack(side = 'left')
+        
+        self.button_exePath.bind("<Enter>", lambda event, h=self.button_exePath: h.configure(bg="#00CD00"))
+        self.button_exePath.bind("<Leave>", lambda event, h=self.button_exePath: h.configure(bg="#FFFFFF"))
+        
         
         """Flag restart"""
         self.check_restart  = tk.Checkbutton(self.frame1, 
@@ -193,4 +225,13 @@ class AdvancedSetFrame(tk.Toplevel):
                 label.grid(row=row+1, column=column+1, sticky="ns", padx=2, pady=1)
                 current_row.append(label)
             self._twiss.append(current_row)
+            
+    def changeExe(self,exePath):
+        filename = filedialog.askopenfilename(parent=self)
+        if filename=='':
+            return
+        
+        exePath.set(filename)
+        
+        print(exePath.get())
         
