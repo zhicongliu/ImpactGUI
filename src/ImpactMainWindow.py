@@ -1380,7 +1380,7 @@ class startWindow(tk.Toplevel):
         self.button_close.bind("<Enter>", lambda event, h=self.button_close: h.configure(bg="#00CD00"))
         self.button_close.bind("<Leave>", lambda event, h=self.button_close: h.configure(bg="#FFFFFF"))
         
-        self.protocol('WM_DELETE_WINDOW', self.closeWindow(master))
+        self.protocol('WM_DELETE_WINDOW', lambda: master.quit())
         
         
     def startImpactT(self,master):
