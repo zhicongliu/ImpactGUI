@@ -106,14 +106,13 @@ class ImpactMainWindow(tk.Tk):
         self.t= startWindow(self)
         w1  = 400
         h1  = 300
-        ws1 = self.t.winfo_screenwidth() # width of the screen
+        ws1 = self.t.winfo_screenwidth()  # width of the screen
         hs1 = self.t.winfo_screenheight() # height of the screen
         x1 = (ws1/2) - (w1/2)
         y1 = (hs1/2) - (h1/2)
         self.t.overrideredirect(0)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
         self.withdraw()
-        
         
         self.frame_left = tk.Frame(self, height =_height, width = _width)
         self.frame_left.grid(row=0,column=0)
@@ -1386,16 +1385,26 @@ class startWindow(tk.Toplevel):
     def startImpactT(self,master):
         master.switchToImpactT()
         master.deiconify()
+        self.resize(master)
         self.destroy()
         
     def startImpactZ(self,master):
         master.switchToImpactZ()
         master.deiconify()
+        self.resize(master)
         self.destroy()
         
     def closeWindow(self,master):
         master.quit()
         
+    def resize(self,master):
+        w  = master.winfo_width()
+        h  = master.winfo_height()
+        ws = master.winfo_screenwidth() # width of the screen
+        hs = master.winfo_screenheight() # height of the screen
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+        master.geometry('%dx%d+%d+%d' % (w, h, x, y))
         
         
 class MyMenu():
