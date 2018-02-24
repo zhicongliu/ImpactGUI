@@ -545,6 +545,7 @@ class ImpactMainWindow(tk.Tk):
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
         self.withdraw()
         self.update_idletasks()
+        self.t.lift()
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
