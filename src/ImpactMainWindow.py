@@ -536,8 +536,7 @@ class ImpactMainWindow(tk.Tk):
         self.distTypeComx.trace('w', self.updateDist)
         self.distTypeNumb.trace('w', self.updateDistType)
     
-        self.deiconify()
-        self.update()
+        '''
         self.winwidth     = self.winfo_width()
         self.winheight    = self.winfo_height()
         self.screenwidth  = self.winfo_screenwidth()  # width of the screen
@@ -546,6 +545,8 @@ class ImpactMainWindow(tk.Tk):
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
         self.withdraw()
         self.t.lift()
+        '''
+        
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
@@ -1409,13 +1410,22 @@ class startWindow(tk.Toplevel):
         master.quit()
         
     def resize(self,master):
-        w  = master.winwidth
-        h  = master.winheight
+        
+        master.update()
+        self.winwidth     = master.winfo_width()
+        self.winheight    = master.winfo_height()
+        self.screenwidth  = master.winfo_screenwidth()  # width of the screen
+        self.screenheight = master.winfo_screenheight() # height of the screen
+        self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
+        self.winPosY = (self.screenheight/2) - (self.winheight/2)
+        
+       # w  = master.winwidth
+       # h  = master.winheight
 
-        x = master.winPosX
-        y = master.winPosY
-        print(w,h,x,y)
-        master.geometry('%dx%d+%d+%d' % (w, h, x, y))
+      #  x = master.winPosX
+      #  y = master.winPosY
+      #  print(w,h,x,y)
+        master.geometry('%dx%d+%d+%d' % (self.winwidth, self.winheight, self.winPosX, self.winPosY))
         
         
 class MyMenu():
