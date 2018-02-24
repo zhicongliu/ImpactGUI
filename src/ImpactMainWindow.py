@@ -112,7 +112,7 @@ class ImpactMainWindow(tk.Tk):
         y1 = (hs1/2) - (h1/2)
         self.t.overrideredirect(0)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
-        
+        self.withdraw()
         
         
 
@@ -543,7 +543,7 @@ class ImpactMainWindow(tk.Tk):
         self.screenheight = self.winfo_screenheight() # height of the screen
         self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
-        self.withdraw()
+
         self.t.lift()
         '''degue'''
         #self.t.startImpactT(self)
