@@ -112,7 +112,7 @@ class ImpactMainWindow(tk.Tk):
         y1 = (hs1/2) - (h1/2)
         self.t.overrideredirect(0)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
-        self.withdraw()
+        
         
         
 
@@ -536,14 +536,15 @@ class ImpactMainWindow(tk.Tk):
         self.distTypeComx.trace('w', self.updateDist)
         self.distTypeNumb.trace('w', self.updateDistType)
 
-        self.update_idletasks() 
+        self.update_idletasks()
         self.winwidth     = self.winfo_width()
         self.winheight    = self.winfo_height()
         self.screenwidth  = self.winfo_screenwidth()  # width of the screen
         self.screenheight = self.winfo_screenheight() # height of the screen
         self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
-
+        self.withdraw()
+        self.update_idletasks()
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
