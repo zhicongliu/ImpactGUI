@@ -536,9 +536,10 @@ class ImpactMainWindow(tk.Tk):
         self.distTypeComx.trace('w', self.updateDist)
         self.distTypeNumb.trace('w', self.updateDistType)
 
+        self.update_idletasks() 
         self.winwidth     = self.winfo_width()
         self.winheight    = self.winfo_height()
-        self.screenwidth  = self.winfo_screenwidth() # width of the screen
+        self.screenwidth  = self.winfo_screenwidth()  # width of the screen
         self.screenheight = self.winfo_screenheight() # height of the screen
         self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
@@ -1393,7 +1394,7 @@ class startWindow(tk.Toplevel):
     def startImpactT(self,master):
         master.switchToImpactT()
         master.deiconify()
-        #self.resize(master)
+        self.resize(master)
         self.destroy()
         
     def startImpactZ(self,master):
@@ -1407,11 +1408,11 @@ class startWindow(tk.Toplevel):
         
     def resize(self,master):
         w  = master.winwidth
-        h  = master.winheight()
+        h  = master.winheight
 
         
         x = master.winPosX
-        y = master.winPosX
+        y = master.winPosY
         print(w,h,x,y)
         master.geometry('%dx%d+%d+%d' % (w, h, x, y))
         
