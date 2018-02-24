@@ -1425,6 +1425,7 @@ class startWindow(tk.Toplevel):
       #  x = master.winPosX
       #  y = master.winPosY
       #  print(w,h,x,y)
+        print(self.winwidth, self.winheight, self.winPosX, self.winPosY)
         master.geometry('%dx%d+%d+%d' % (self.winwidth, self.winheight, self.winPosX, self.winPosY))
         
         
