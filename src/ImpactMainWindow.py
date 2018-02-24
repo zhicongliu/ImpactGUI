@@ -112,7 +112,7 @@ class ImpactMainWindow(tk.Tk):
         y1 = (hs1/2) - (h1/2)
         self.t.overrideredirect(0)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
-        self.withdraw()
+        
         
         
 
@@ -535,8 +535,8 @@ class ImpactMainWindow(tk.Tk):
         self.updateDistTypeLock  =0
         self.distTypeComx.trace('w', self.updateDist)
         self.distTypeNumb.trace('w', self.updateDistType)
-    
-        '''
+
+        self.update()
         self.winwidth     = self.winfo_width()
         self.winheight    = self.winfo_height()
         self.screenwidth  = self.winfo_screenwidth()  # width of the screen
@@ -544,9 +544,8 @@ class ImpactMainWindow(tk.Tk):
         self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
         self.withdraw()
+
         self.t.lift()
-        '''
-        
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
@@ -1410,23 +1409,14 @@ class startWindow(tk.Toplevel):
         master.quit()
         
     def resize(self,master):
-        
-        master.update()
-        self.winwidth     = master.winfo_width()
-        self.winheight    = master.winfo_height()
-        self.screenwidth  = master.winfo_screenwidth()  # width of the screen
-        self.screenheight = master.winfo_screenheight() # height of the screen
-        self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
-        self.winPosY = (self.screenheight/2) - (self.winheight/2)
-        
-       # w  = master.winwidth
-       # h  = master.winheight
+        w  = master.winwidth
+        h  = master.winheight
 
-      #  x = master.winPosX
-      #  y = master.winPosY
-      #  print(w,h,x,y)
-        print(self.winwidth, self.winheight, self.winPosX, self.winPosY)
-        master.geometry('%dx%d+%d+%d' % (self.winwidth, self.winheight, self.winPosX, self.winPosY))
+        
+        x = master.winPosX
+        y = master.winPosY
+        print(w,h,x,y)
+        master.geometry('%dx%d+%d+%d' % (w, h, x, y))
         
         
 class MyMenu():
