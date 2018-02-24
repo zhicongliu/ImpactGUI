@@ -535,7 +535,8 @@ class ImpactMainWindow(tk.Tk):
         self.updateDistTypeLock  =0
         self.distTypeComx.trace('w', self.updateDist)
         self.distTypeNumb.trace('w', self.updateDistType)
-
+    
+        self.deiconify()
         self.update()
         self.winwidth     = self.winfo_width()
         self.winheight    = self.winfo_height()
@@ -543,7 +544,7 @@ class ImpactMainWindow(tk.Tk):
         self.screenheight = self.winfo_screenheight() # height of the screen
         self.winPosX = (self.screenwidth/2) - (self.winwidth/2)
         self.winPosY = (self.screenheight/2) - (self.winheight/2)
-
+        self.withdraw()
         self.t.lift()
         '''degue'''
         #self.t.startImpactT(self)
@@ -1411,7 +1412,6 @@ class startWindow(tk.Toplevel):
         w  = master.winwidth
         h  = master.winheight
 
-        
         x = master.winPosX
         y = master.winPosY
         print(w,h,x,y)
