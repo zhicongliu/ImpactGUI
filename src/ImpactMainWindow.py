@@ -26,8 +26,18 @@ import ImpactZSet
 import ImpactZPlot
 
 _MPINAME   ='mpirun'
-_IMPACT_T_NAME ='ImpactTv1.8b.exe'
-_IMPACT_Z_NAME ='ImpactZv17.exe'
+_IMPACT_T_NAME = 'ImpactT executable not defined'
+_IMPACT_Z_NAME = 'ImpactZ executable not defined'
+from sys import platform
+if platform == "linux" or platform == "linux2":
+    # linux
+    _IMPACT_Z_NAME = 'ImpactZ.serial.linux'
+# elif platform == "darwin":
+    # OS X
+elif platform == "win32":
+    # Windows...
+    _IMPACT_T_NAME = 'ImpactTv1.8b.win.exe'
+    _IMPACT_Z_NAME = 'ImpactZv17.win.exe'
 
 _width = 560
 _height= 633
@@ -101,7 +111,8 @@ class ImpactMainWindow(tk.Tk):
         #self.master.iconbitmap()
           
         for item in ImpactMainWindow.LABEL_TEXT:
-            print(item)    
+            print(item)
+            
     def createWidgets(self, master):
         self.t= startWindow(self)
         w1  = 400
@@ -112,11 +123,6 @@ class ImpactMainWindow(tk.Tk):
         y1 = (hs1/2) - (h1/2)
         self.t.overrideredirect(0)
         self.t.geometry('%dx%d+%d+%d' % (w1, h1, x1, y1))
-        
-        
-        
-
-        
         self.frame_left = tk.Frame(self, height =_height, width = _width)
         self.frame_left.grid(row=0,column=0)
         
@@ -435,6 +441,7 @@ class ImpactMainWindow(tk.Tk):
         
         self.button_AdvancedControl.bind("<Enter>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#00CD00"))
         self.button_AdvancedControl.bind("<Leave>", lambda event, h=self.button_AdvancedControl: h.configure(bg="#FFFFFF"))
+        
         """Lattice"""
         self.frame_input3 = tk.LabelFrame(self.frame_left, 
                                           height =_height/6, width = _width,
@@ -549,7 +556,119 @@ class ImpactMainWindow(tk.Tk):
         '''degue'''
         #self.t.startImpactT(self)
         #self.makeAdvancedPlot()
+    
+    #(Kilean)#######################################################
+    def getBeam4pImpact(self):
+      self.beam = {
+        'nCore_y':int(self.entry_noc1.get()),
+        'nCore_z':int(self.entry_noc2.get()),
+        'mass': float(self.ptcMass.get()), # eV/c^2
+        'energy': float(self.entry_Ek.get()), # eV
+        'n_particles': int(float(self.entry_Np.get())),
+        'error study flag':int(float(self.Flagerr.get())),
+        'restart flag':int(float(self.FlagRestart.get())),
+        'standard output':int(OUTPUT_Z_TYPE[self.FlagOutput_Z.get()]),
+        'current' : float(self.entry_cur.get()), # ampere
+        'x00': float(self.string_sigma[0][0].get()),
+        'x11': float(self.string_sigma[0][1].get()),
+        'x01': float(self.string_sigma[0][2].get()),
+        'y00': float(self.string_sigma[1][0].get()),
+        'y11': float(self.string_sigma[1][1].get()),
+        'y01': float(self.string_sigma[1][2].get()),
+        'z00': float(self.string_sigma[2][0].get()),
+        'z11': float(self.string_sigma[2][1].get()),
+        'z01': float(self.string_sigma[2][2].get()),
+        'frequency': float(self.entry_frq.get()), # Hz
+        'phase': float(self.Tinitial.get()),   #radian
+        'mesh_x' : int(self.entry_Ngx.get()),
+        'mesh_y' : int(self.entry_Ngy.get()), 
+        'mesh_z' : int(self.entry_Ngz.get())}
+      if self.distType.get() == 'Other':
+        self.beam['distribution id'] = int(self.distTypeNumb.get())
+      else:
+        self.beam['distribution id'] = int(DISTRIBUTION_Z_TYPE[self.distType.get()])
+      self.beam['charge per mass'] = float(self.ptcCharge.get())/self.beam['mass']
 
+    def getLattice4pImpact(self):
+      '''
+      get lattice data for pImpact
+      '''
+      def str2lattice(latticeStr):
+        lattice = []
+        for i in range(len(latticeStr)):
+            if latticeStr[i] in ['\n','\r\n',''] or latticeStr[i][0]=='!':
+                continue
+            elem = str2elem(latticeStr[i])
+            if elem : #check if elem is not empty
+                lattice.append(elem)
+        return lattice
+      def str2elem(elemStr): 
+        elemStr = elemStr.split()
+        elemID=int(float(elemStr[3]))
+        if elemID == 0:
+            elemtDict = {'type':'drift',
+                         'length': float(elemStr[0]),
+                         'n_sckick': int(elemStr[1]), 
+                         'n_map': int(elemStr[2]), 
+                         'radius': float(elemStr[4])
+                        }   
+        elif elemID == 1:
+            elemtDict = {'type':'quad',
+                         'length': float(elemStr[0]),
+                         'n_sckick': int(elemStr[1]), 
+                         'n_map': int(elemStr[2]), 
+                         'B1': float(elemStr[4]), 
+                         'input file id': int(elemStr[5]), 
+                         'radius': float(elemStr[6]) }
+            if len(elemStr)>8:
+                         elemtDict['dx']=float(elemStr[7])
+            if len(elemStr)>9:
+                         elemtDict['dy']=float(elemStr[8]) 
+        elif elemID == 4:
+            elemtDict = {'type':'bend',
+                         'length': float(elemStr[0]),
+                         'n_sckick': int(elemStr[1]), 
+                         'n_map': int(elemStr[2]), 
+                         'angle': float(elemStr[4]), 
+                         'k1': float(elemStr[5]), 
+                         'input switch': int(float(elemStr[6])),
+                         'radius': float(elemStr[7]),
+                         'entrance edge': float(elemStr[8]),
+                         'exit edge': float(elemStr[9]),
+                         'entrance curvature': float(elemStr[10]),
+                         'exit curvature': float(elemStr[11]),
+                         'FINT': float(elemStr[12]),
+                        }                     
+        elif elemID == 104:
+            elemtDict= {'type':'scrf',
+                        'length': float(elemStr[0]),
+                        'n_sckick': int(elemStr[1]), 
+                        'n_map': int(elemStr[2]), 
+                        'scale': float(elemStr[4]), 
+                        'frequency': float(elemStr[5]), 
+                        'phase': float(elemStr[6]), 
+                        'input file id': int(elemStr[7]), 
+                        'radius': float(elemStr[8])
+                       }
+        elif elemID == -2:
+            elemtDict= {'type':'write full',
+                        'file id': int(elemStr[2])}                   
+        elif elemID == -7:
+            elemtDict= {'type':'restart'}
+        elif elemID == -99:
+            elemtDict= {'type':'halt'} 
+        else :
+            elemtDict= {}
+        return elemtDict
+      latticeStr = self.lattice.getHide().splitlines()
+      self.lattice = str2lattice(latticeStr)
+      
+    def exit(self):
+      self.getBeam4pImpact()
+      self.getLattice4pImpact()
+      self.destroy()
+      
+    #######################################################(Kilean)#
     def debug(self):
         self.lattice.convertNtoW(self.lattice.get('0.0', tk.END))
     
@@ -569,7 +688,6 @@ class ImpactMainWindow(tk.Tk):
         self.entry_dic.insert(0, filename)
         print(filename)
     
-        
     def updatePtc(self,*args):
         if self.updatePtcTypeLock ==1:
             return
@@ -675,6 +793,7 @@ class ImpactMainWindow(tk.Tk):
             #print('Error')
             pass
         self.updateTwissLock = 0
+        
     def updateSigma(self,i):
         if self.updateTwissLock == 1:
             return
@@ -698,6 +817,7 @@ class ImpactMainWindow(tk.Tk):
             #print('Error')
             pass
         self.updateTwissLock = 0
+        
     def preprocessing(self):
         try:
             os.chdir(self.entry_dic.get())
@@ -776,6 +896,7 @@ class ImpactMainWindow(tk.Tk):
         if self.distTypeComx.get() not in distT:
             self.distTypeComx.set('Other')
         self.lattice.titleT()
+        
     def makeAdvancedSet(self):
         try:
             self.AdvancedSet.destroy()
@@ -788,7 +909,6 @@ class ImpactMainWindow(tk.Tk):
         else:
             print('Cannot find kernel: '+self.AccKernel)
                     
-            
     def makeAdvancedPlot(self):
         try:
             self.AdvancedPlot.destroy()
@@ -800,6 +920,7 @@ class ImpactMainWindow(tk.Tk):
             self.AdvancedPlot = ImpactZPlot.AdvancedPlotControlFrame(self)
         else:
             print('Cannot find kernel: '+self.AccKernel)
+            
     def thread_it(self,func):
         self.button_run['state']='disabled'
         self.run_lock.acquire()
@@ -867,7 +988,6 @@ class ImpactMainWindow(tk.Tk):
                 self.bell()
                 return False
             
-
     def save(self,fileName):
         if os.path.isfile(fileName) == True and os.path.isfile(fileName+'.old') == False:
             copyfile(fileName,fileName+'.old')
@@ -1021,8 +1141,6 @@ class ImpactMainWindow(tk.Tk):
         ImpactInput.close()
         return np
     
-
-        
     def load(self,inputFileName):
         
         if self.AccKernel=='ImpactT':
@@ -1275,6 +1393,8 @@ class ImpactMainWindow(tk.Tk):
             self.lattice.latticeTextHide.insert(tk.END,'\n')
         self.lattice.update()
 
+        
+        
 class PlotControlFrame(tk.Frame):
     """Output"""
     def __init__(self, master=None, cnf={}, **kw):
@@ -1428,7 +1548,7 @@ class MyMenu():
         filemenu.add_command(label="Load", command=lambda: self.file_open(root))
         filemenu.add_command(label="Save", command=self.file_save)
         filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=root.destroy)
+        filemenu.add_command(label="Exit", command=root.exit)
         
         controlMenu = tk.Menu(self.menubar, tearoff=0)
         controlMenu.add_command(label="Switch to ImpactT", command=lambda: self.control_switchToImpactT(root))
@@ -1443,7 +1563,7 @@ class MyMenu():
         self.menubar.add_cascade(label="Help", menu=helpmenu)
         
         root.config(menu=self.menubar)
-          
+      
     def file_new(self):
         messagebox.showinfo('about', 'GUI author: Zhicong Liu \n verion 1.0 \n zhicongliu@lbl.gov ')
         pass
@@ -1499,9 +1619,11 @@ def resource_path(relative_path):
     #print(base_path,relative_path,os.path.join(base_path, relative_path))
     return os.path.join(base_path, relative_path)
 
+
 def quitConfirm():
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         root.destroy()
+
 
 '''
             pyinsteller -F -add-data "icon\ImpactT.gif;icon" ImpactGUI.py
